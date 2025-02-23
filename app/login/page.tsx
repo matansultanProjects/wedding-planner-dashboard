@@ -66,7 +66,7 @@ export default function LoginPage() {
           </div>
           <Button
             variant="ghost"
-            size="icon"
+            // size="icon"
             onClick={handleSignIn}
             className="animate-pulse"
           >
@@ -137,7 +137,7 @@ export default function LoginPage() {
       <footer className="bg-secondary py-6">
         <div className="container text-center">
           <p className="text-primary text-sm ">
-          Built with ❤️ for your special day
+          Built with ❤️ for your special day!
           © {new Date().getFullYear()} - תכנון החתונה שלך.
           </p>
           <div className="flex justify-center space-x-6 mt-4">
