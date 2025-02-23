@@ -54,11 +54,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error("Error signing in with Google", error)
-      if (error.code === "auth/unauthorized-domain") {
-        console.error("Unauthorized domain. Please add this domain to your Firebase authorized domains list.")
-        // You can add a toast notification here to inform the user
-      }
-      throw error
     }
   }
 
