@@ -141,9 +141,9 @@ export default function LoginPage() {
           © {new Date().getFullYear()} - תכנון החתונה שלך.
           </p>
           <div className="flex justify-center space-x-6 mt-4">
-            <a href="#terms" className="text-primary">תנאי שימוש</a>
-            <a href="#privacy" className="text-primary">פרטיות</a>
-            <a href="#contact" className="text-primary">צור קשר</a>
+            <a href="#terms" className="text-primary" >תנאי שימוש </a>
+            <a href="#privacy" className="text-primary">פרטיות </a>
+            <a href="#contact" className="text-primary">צור קשר </a>
           </div>
         </div>
       </footer>
