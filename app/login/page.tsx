@@ -66,7 +66,7 @@ export default function LoginPage() {
           </div>
           <Button
             variant="ghost"
-    
+            size="icon"
             onClick={handleSignIn}
             className="animate-pulse"
           >

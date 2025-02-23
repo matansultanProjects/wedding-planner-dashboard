@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await signInWithPopup(auth, provider)
       } else {
         // Use signInWithRedirect for production
-        await signInWithRedirect(auth, provider)
+        await signInWithPopup(auth, provider)
       }
     } catch (error) {
       console.error("Error signing in with Google", error)
