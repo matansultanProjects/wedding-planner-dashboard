@@ -20,7 +20,7 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    if (user) window.location.href = "/"
+    if (user) window.location.href = "/wedding-details"
   }, [user])
 
   const handleSignIn = async () => {
@@ -31,7 +31,7 @@ export default function LoginPage() {
       console.error("Login error:", error)
       toast({
         title: "שגיאת התחברות",
-        description: "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר ...",
+        description: "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר יותר.",
         variant: "destructive",
       })
     } finally {
@@ -141,7 +141,7 @@ export default function LoginPage() {
           © {new Date().getFullYear()} - תכנון החתונה שלך.
           </p>
           <div className="flex justify-center space-x-6 mt-4">
-            <a href="#terms" className="text-primary" >תנאי שימוש </a>
+            <a href="#terms" className="text-primary" >תנאי שימוש  </a>
             <a href="#privacy" className="text-primary">פרטיות </a>
             <a href="#contact" className="text-primary">צור קשר </a>
           </div>
