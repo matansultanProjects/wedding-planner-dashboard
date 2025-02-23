@@ -60,13 +60,13 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-15 items-center justify-between py-4">
+        <div className="container flex h-16 items-center justify-between py-4">
           <div className="flex items-center gap-2">
             <img src="https://files.oaiusercontent.com/file-TJ47HdyzW2iHpAB4Dm1ndm?se=2025-02-18T15%3A40%3A08Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D25c5d00c-cfec-4a32-a8d4-be69c186c1f4.webp&sig=htL4qH%2BJs73mXjfCSZi5E/p1aKt86fde4H2zAWbASOw%3D" alt="לוגו" className="h-8" />
           </div>
           <Button
             variant="ghost"
-            // size="icon"
+    
             onClick={handleSignIn}
             className="animate-pulse"
           >
@@ -137,13 +137,13 @@ export default function LoginPage() {
       <footer className="bg-secondary py-6">
         <div className="container text-center">
           <p className="text-primary text-sm ">
-          Built with ❤️ for your special day!
+          Built with ❤️ for your special day
           © {new Date().getFullYear()} - תכנון החתונה שלך.
           </p>
           <div className="flex justify-center space-x-6 mt-4">
-            <a href="#terms" className="text-primary" >תנאי שימוש  </a>
-            <a href="#privacy" className="text-primary">פרטיות </a>
-            <a href="#contact" className="text-primary">צור קשר </a>
+            <a href="#terms" className="text-primary">תנאי שימוש</a>
+            <a href="#privacy" className="text-primary">פרטיות</a>
+            <a href="#contact" className="text-primary">צור קשר</a>
           </div>
         </div>
       </footer>
