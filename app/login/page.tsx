@@ -31,7 +31,7 @@ export default function LoginPage() {
       console.error("Login error:", error)
       toast({
         title: "שגיאת התחברות",
-        description: "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר יותר.",
+        description: "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר ...",
         variant: "destructive",
       })
     } finally {
