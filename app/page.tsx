@@ -26,6 +26,22 @@ const testimonials = [
     image: "/placeholder.svg?height=100&width=100",
     rating: 5,
   },
+  {
+    name: "עידן ונועה",
+    text: "הכלי המושלם לניהול אירוע! מאוד אינטואיטיבי ונוח לשימוש.",
+    image: "/placeholder.svg?height=100&width=100",
+    rating: 5,
+  }, {
+    name: "עידן ונועה",
+    text: "הכלי המושלם לניהול אירוע! מאוד אינטואיטיבי ונוח לשימוש.",
+    image: "/placeholder.svg?height=100&width=100",
+    rating: 5,
+  }, {
+    name: "עידן ונועה",
+    text: "הכלי המושלם לניהול אירוע! מאוד אינטואיטיבי ונוח לשימוש.",
+    image: "/placeholder.svg?height=100&width=100",
+    rating: 5,
+  },
 ]
 
 const features = [
@@ -75,7 +91,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary relative">
       <Link href="https://wa.me/+972502555383" target="_blank" className="fixed bottom-4 right-4 z-50">
         <motion.div whileHover={{ scale: 1.1 }}>
-          <img src="/whatsapp-icon.png" alt="WhatsApp" className="w-14 h-14 shadow-lg rounded-full" />
+          <img src="https://static-00.iconduck.com/assets.00/whatsapp-icon-1020x1024-iykox85t.png" alt="WhatsApp" className="w-14 h-14 shadow-lg rounded-full" />
         </motion.div>
       </Link>
 

@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils"
 import { AuthGuard } from "./auth-guard"
 
 const navItems = [
-  { href: "/", label: "סקירה כללית" },
-  { href: "/wedding-details", label: "פרטי החתונה" },
+  { href: "/dashboard", label: " סקירה כללית " },
+  { href: "/wedding-details", label: "    פרטי החתונה " },
   { href: "/guests", label: "רשימת אורחים" },
   { href: "/seating", label: "סידורי הושבה" },
   { href: "/budget", label: "תקציב" },
