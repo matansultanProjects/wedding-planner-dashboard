@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Guest } from "@/lib/types"
 import { getFromLocalStorage, saveToLocalStorage } from "@/lib/storage"
+import { useToast } from "@/components/ui/use-toast"
 
 interface Table {
   id: string
@@ -15,6 +16,7 @@ interface Table {
 }
 
 export function SeatingArrangement() {
+  const { toast } = useToast()
   const [guests, setGuests] = useState<Guest[]>([])
   const [tables, setTables] = useState<Table[]>([])
   const [newTableName, setNewTableName] = useState("")
@@ -39,12 +41,17 @@ export function SeatingArrangement() {
       saveToLocalStorage({ tables: updatedTables })
       setNewTableName("")
       setNewTableSeats(8)
+      toast({
+        title: "שולחן נוסף",
+        description: `שולחן ${newTableName} נוסף בהצלחה`,
+      })
     }
   }
 
   const assignGuestToTable = (guestId: string, tableId: string) => {
     const guest = guests.find((g) => g.id === guestId)
-    if (!guest) return
+    const table = tables.find((t) => t.id === tableId)
+    if (!guest || !table) return
 
     const updatedTables = tables.map((table) => {
       if (table.id === tableId) {
@@ -53,7 +60,17 @@ export function SeatingArrangement() {
           return sum + (g ? g.invitedCount : 0)
         }, 0)
         if (currentSeats + guest.invitedCount <= table.seats) {
+          toast({
+            title: "שיבוץ אורח",
+            description: `${guest.fullName} שובץ בהצלחה לשולחן ${table.name}`,
+          })
           return { ...table, guests: [...table.guests, guestId] }
+        } else {
+          toast({
+            title: "שגיאה בשיבוץ",
+            description: "אין מספיק מקום בשולחן זה",
+            variant: "destructive",
+          })
         }
       }
       return table
@@ -63,14 +80,20 @@ export function SeatingArrangement() {
   }
 
   const removeGuestFromTable = (guestId: string, tableId: string) => {
-    const updatedTables = tables.map((table) => {
-      if (table.id === tableId) {
-        return { ...table, guests: table.guests.filter((id) => id !== guestId) }
+    const guest = guests.find((g) => g.id === guestId)
+    const table = tables.find((t) => t.id === tableId)
+    const updatedTables = tables.map((t) => {
+      if (t.id === tableId) {
+        return { ...t, guests: t.guests.filter((id) => id !== guestId) }
       }
-      return table
+      return t
     })
     setTables(updatedTables)
     saveToLocalStorage({ tables: updatedTables })
+    toast({
+      title: "הסרת שיבוץ",
+      description: `${guest?.fullName} הוסר מהשולחן ${table?.name}`,
+    })
   }
 
   return (

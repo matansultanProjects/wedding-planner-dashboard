@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { PlusCircle, Phone, Mail, DollarSign, Briefcase, User, Edit, Trash } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { useToast } from "@/components/ui/use-toast"
 
 interface Vendor {
   id: string
@@ -23,6 +24,7 @@ interface Vendor {
 }
 
 export function VendorManager() {
+  const { toast } = useToast()
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [newVendor, setNewVendor] = useState<Partial<Vendor>>({})
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null)
@@ -35,28 +37,25 @@ export function VendorManager() {
   }, [])
 
   const handleAddVendor = () => {
-    if (
-      newVendor.name &&
-      newVendor.category &&
-      newVendor.contact &&
-      newVendor.phone &&
-      newVendor.email &&
-      newVendor.cost
-    ) {
+    if (newVendor.name && newVendor.category && newVendor.contact) {
       const vendorToAdd: Vendor = {
         id: Date.now().toString(),
         name: newVendor.name,
         category: newVendor.category,
         contact: newVendor.contact,
-        phone: newVendor.phone,
-        email: newVendor.email,
-        cost: newVendor.cost,
+        phone: newVendor.phone || "",
+        email: newVendor.email || "",
+        cost: newVendor.cost || 0,
         status: "בתהליך",
       }
       const updatedVendors = [...vendors, vendorToAdd]
       setVendors(updatedVendors)
       saveToLocalStorage({ vendors: updatedVendors })
       setNewVendor({})
+      toast({
+        title: "ספק נוסף",
+        description: `${vendorToAdd.name} נוסף בהצלחה לרשימת הספקים`,
+      })
     }
   }
 
@@ -66,13 +65,22 @@ export function VendorManager() {
       setVendors(updatedVendors)
       saveToLocalStorage({ vendors: updatedVendors })
       setEditingVendor(null)
+      toast({
+        title: "ספק עודכן",
+        description: `פרטי הספק ${editingVendor.name} עודכנו בהצלחה`,
+      })
     }
   }
 
   const handleDeleteVendor = (id: string) => {
+    const vendorName = vendors.find((v) => v.id === id)?.name
     const updatedVendors = vendors.filter((v) => v.id !== id)
     setVendors(updatedVendors)
     saveToLocalStorage({ vendors: updatedVendors })
+    toast({
+      title: "ספק הוסר",
+      description: `${vendorName} הוסר מרשימת הספקים`,
+    })
   }
 
   return (

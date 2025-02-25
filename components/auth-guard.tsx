@@ -1,37 +1,41 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useAuth } from "./auth-provider"
-import { motion } from "framer-motion"
+import { getFromLocalStorage } from "@/lib/storage"
+import { Loader2 } from "lucide-react"
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, demoMode } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login")
+    if (!loading) {
+      if (!user && !demoMode) {
+        router.push("/login")
+      } else {
+        // Check if user has completed onboarding
+        const storedData = getFromLocalStorage()
+        if (!storedData.weddingDetails && pathname !== "/onboarding" && !pathname.includes("/login")) {
+          router.push("/onboarding")
+        }
+      }
     }
-  }, [user, loading, router])
+  }, [user, loading, demoMode, router, pathname])
 
   if (loading) {
-    return  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-primary">
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-      <motion.div
-        animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-        className="text-5xl font-bold text-primary-500"
-      >
-        💍 טוען...
-      </motion.div>
-      <p className="mt-2 text-gray-600">מתחיל את המסע המשותף שלנו...</p>
-    </motion.div>
-  </div>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+        <p className="text-lg font-medium">טוען...</p>
+      </div>
+    )
   }
 
-  if (!user) {
+  if (!user && !demoMode) {
     return null
   }
 

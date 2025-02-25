@@ -5,24 +5,24 @@ import { Settings as CustomSettings } from "@/components/settings"
 
 export function DashboardHeader() {
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="grid gap-1">
-        <h1 className="font-heading text-3xl md:text-4xl">
-          <CalendarHeart className="inline-block ml-2" />
+    <div className="flex items-center justify-between mb-8">
+      <div className="space-y-1">
+        <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-2">
+          <CalendarHeart className="h-8 w-8 text-primary" />
           מתכנן החתונה שלך
         </h1>
         <p className="text-lg text-muted-foreground">נהל את כל פרטי החתונה שלך במקום אחד</p>
       </div>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="icon">
-            <Settings className="h-4 w-4" />
+          <Button variant="outline" size="icon" className="rounded-full h-10 w-10">
+            <Settings className="h-5 w-5" />
             <span className="sr-only">הגדרות</span>
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>הגדרות</DialogTitle>
+            <DialogTitle className="text-xl">הגדרות</DialogTitle>
           </DialogHeader>
           <CustomSettings />
         </DialogContent>

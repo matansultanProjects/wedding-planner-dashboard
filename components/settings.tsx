@@ -36,12 +36,20 @@ export function Settings() {
     setLanguage(newLanguage)
     localStorage.setItem("language", newLanguage)
     document.documentElement.dir = newLanguage === "he" ? "rtl" : "ltr"
+    toast({
+      title: "שפה עודכנה",
+      description: "הגדרות השפה עודכנו בהצלחה",
+    })
   }
 
   const handleColorSchemeChange = (newColorScheme: string) => {
     setColorScheme(newColorScheme)
     localStorage.setItem("colorScheme", newColorScheme)
     document.documentElement.setAttribute("data-color-scheme", newColorScheme)
+    toast({
+      title: "ערכת נושא עודכנה",
+      description: "ערכת הנושא עודכנה בהצלחה",
+    })
   }
 
   const handleClearData = () => {
@@ -49,7 +57,7 @@ export function Settings() {
       clearLocalStorage()
       toast({
         title: "נתונים נמחקו",
-        description: "כל הנתונים נמחקו בהצלחה.",
+        description: "כל הנתונים נמחקו בהצלחה",
       })
     }
   }

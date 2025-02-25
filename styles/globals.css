@@ -106,6 +106,18 @@
   }
 }
 
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
 /* Custom classes */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;
@@ -119,8 +131,12 @@
   animation: pulse 2s infinite;
 }
 
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
 .gradient-text {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent;
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-primary via-pink-500 to-accent;
 }
 
 .card-hover {
@@ -161,5 +177,9 @@
 
 ::-webkit-scrollbar-thumb {
   @apply bg-primary/50 rounded-full hover:bg-primary;
+}
+
+.transition-all {
+  @apply transition-all duration-300 ease-in-out;
 }
 

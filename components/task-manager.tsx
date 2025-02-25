@@ -8,8 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { Task } from "@/lib/types"
 import { getFromLocalStorage, saveToLocalStorage } from "@/lib/storage"
 import { PlusCircle, Edit, Trash } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export function TaskManager() {
+  const { toast } = useToast()
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTask, setNewTask] = useState({ title: "", description: "", dueDate: "", category: "" })
 
@@ -29,19 +31,38 @@ export function TaskManager() {
       setTasks(updatedTasks)
       saveToLocalStorage({ tasks: updatedTasks })
       setNewTask({ title: "", description: "", dueDate: "", category: "" })
+      toast({
+        title: "משימה נוספה",
+        description: `המשימה "${task.title}" נוספה בהצלחה`,
+      })
     }
   }
 
   const toggleTaskCompletion = (id: string) => {
-    const updatedTasks = tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task))
+    const updatedTasks = tasks.map((task) => {
+      if (task.id === id) {
+        const newStatus = !task.completed
+        toast({
+          title: newStatus ? "משימה הושלמה" : "משימה לא הושלמה",
+          description: `המשימה "${task.title}" ${newStatus ? "סומנה כהושלמה" : "סומנה כלא הושלמה"}`,
+        })
+        return { ...task, completed: newStatus }
+      }
+      return task
+    })
     setTasks(updatedTasks)
     saveToLocalStorage({ tasks: updatedTasks })
   }
 
   const deleteTask = (id: string) => {
+    const taskName = tasks.find((t) => t.id === id)?.title
     const updatedTasks = tasks.filter((task) => task.id !== id)
     setTasks(updatedTasks)
     saveToLocalStorage({ tasks: updatedTasks })
+    toast({
+      title: "משימה נמחקה",
+      description: `המשימה "${taskName}" נמחקה בהצלחה`,
+    })
   }
 
   return (

@@ -11,8 +11,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { WeddingDetails } from "@/lib/types"
 import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { useToast } from "@/components/ui/use-toast"
 
 export function WeddingForm() {
+  const { toast } = useToast()
   const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>({
     groomName: "",
     brideName: "",
@@ -46,6 +48,11 @@ export function WeddingForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     saveToLocalStorage({ weddingDetails })
+    toast({
+      title: "פרטי החתונה נשמרו",
+      description: "הפרטים עודכנו בהצלחה",
+      variant: "default",
+    })
   }
 
   return (

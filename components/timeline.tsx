@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { useToast } from "@/components/ui/use-toast"
 
 interface TimelineEvent {
   id: string
@@ -20,6 +21,7 @@ interface TimelineEvent {
 }
 
 export function Timeline() {
+  const { toast } = useToast()
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [newEvent, setNewEvent] = useState<Partial<TimelineEvent>>({})
 
@@ -43,6 +45,10 @@ export function Timeline() {
       setEvents(updatedEvents)
       saveToLocalStorage({ timelineEvents: updatedEvents })
       setNewEvent({})
+      toast({
+        title: "אירוע נוסף",
+        description: `${eventToAdd.title} נוסף בהצלחה לציר הזמן`,
+      })
     }
   }
 

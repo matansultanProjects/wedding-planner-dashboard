@@ -15,8 +15,11 @@ import { auth } from "@/lib/firebase"
 type AuthContextType = {
   user: User | null
   loading: boolean
+  demoMode: boolean
   signIn: () => Promise<void>
   signOut: () => Promise<void>
+  enableDemoMode: () => void
+  disableDemoMode: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -32,8 +35,15 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [demoMode, setDemoMode] = useState(false)
 
   useEffect(() => {
+    // Check if demo mode is enabled in localStorage
+    const storedDemoMode = localStorage.getItem("demoMode") === "true"
+    if (storedDemoMode) {
+      setDemoMode(true)
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
       setLoading(false)
@@ -50,21 +60,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await signInWithPopup(auth, provider)
       } else {
         // Use signInWithRedirect for production
-        await signInWithPopup(auth, provider)
+        await signInWithRedirect(auth, provider)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing in with Google", error)
+      if (error.code === "auth/unauthorized-domain") {
+        console.error("Unauthorized domain. Please add this domain to your Firebase authorized domains list.")
+        // You can add a toast notification here to inform the user
+      }
+      throw error
     }
   }
 
   const signOutUser = async () => {
     try {
       await signOut(auth)
+      // Also disable demo mode when signing out
+      disableDemoMode()
     } catch (error) {
       console.error("Error signing out", error)
     }
   }
 
-  return <AuthContext.Provider value={{ user, loading, signIn, signOut: signOutUser }}>{children}</AuthContext.Provider>
+  const enableDemoMode = () => {
+    setDemoMode(true)
+    localStorage.setItem("demoMode", "true")
+  }
+
+  const disableDemoMode = () => {
+    setDemoMode(false)
+    localStorage.removeItem("demoMode")
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        demoMode,
+        signIn,
+        signOut: signOutUser,
+        enableDemoMode,
+        disableDemoMode,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 

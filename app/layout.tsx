@@ -1,17 +1,29 @@
 import type React from "react"
-import "@/styles/globals.css"
-import { Inter } from "next/font/google"
+import "@/app/globals.css"
+import { Rubik, Heebo } from "next/font/google"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
 
-const inter = Inter({ subsets: ["latin"] })
+// Load Heebo font with Hebrew and Latin subsets
+const heebo = Heebo({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+})
+
+// Load Rubik font with Hebrew and Latin subsets
+const rubik = Rubik({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
-  title: "Wedding Planner Dashboard",
-  description: "Comprehensive wedding planning platform",
-    generator: 'v0.dev'
+  title: "מתכנן החתונה שלך | Wedding Planner Dashboard",
+  description: "פלטפורמה מקיפה לתכנון חתונה מושלמת",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -21,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${heebo.variable} ${rubik.variable} font-sans`}>
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}

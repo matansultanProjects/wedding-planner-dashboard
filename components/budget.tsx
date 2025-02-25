@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { useToast } from "@/components/ui/use-toast"
 
 interface BudgetItem {
   id: string
@@ -21,6 +22,7 @@ interface BudgetItem {
 }
 
 export function Budget() {
+  const { toast } = useToast()
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
   const [newItem, setNewItem] = useState<Partial<BudgetItem>>({})
 
@@ -45,6 +47,10 @@ export function Budget() {
       setBudgetItems(updatedItems)
       saveToLocalStorage({ budgetItems: updatedItems })
       setNewItem({})
+      toast({
+        title: "פריט תקציב נוסף",
+        description: `${itemToAdd.description} נוסף בהצלחה לתקציב`,
+      })
     }
   }
 
