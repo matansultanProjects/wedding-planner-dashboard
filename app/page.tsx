@@ -8,7 +8,7 @@ import { CalendarHeart, Check, ArrowRight } from "lucide-react"
 
 const testimonials = [
   {
-    name: "רון ומאיה",
+    name: "רון ומאיה" ,
     text: "הפלטפורמה הזו עזרה לנו כל כך בתכנון החתונה שלנו! כל המשימות והספקים במקום אחד.",
     image: "/placeholder.svg?height=100&width=100",
     rating: 5,
