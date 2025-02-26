@@ -38,7 +38,7 @@ export function DashboardShell({
                 <nav className="flex flex-col space-y-4">{/* Add your navigation items here */}</nav>
               </SheetContent>
             </Sheet>
-            <h1 className="text-2xl font-bold gradient-text">מתכנן החתונה שלך</h1>
+            <h1 className="text-2xl font-bold gradient-text">wedfull - מתכנן החתונה שלך</h1>
           </div>
           <Button
             variant="ghost"

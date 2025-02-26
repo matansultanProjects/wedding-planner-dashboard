@@ -9,7 +9,7 @@ export function DashboardHeader() {
       <div className="space-y-1">
         <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-2">
           <CalendarHeart className="h-8 w-8 text-primary" />
-          מתכנן החתונה שלך
+          wedfull - מתכנן החתונה שלך
         </h1>
         <p className="text-lg text-muted-foreground">נהל את כל פרטי החתונה שלך במקום אחד</p>
       </div>

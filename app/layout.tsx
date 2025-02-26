@@ -21,7 +21,7 @@ const rubik = Rubik({
 })
 
 export const metadata: Metadata = {
-  title: "מתכנן החתונה שלך | Wedding Planner Dashboard",
+  title: "wedfull - מתכנן החתונה שלך | Wedding Planner Dashboard",
   description: "פלטפורמה מקיפה לתכנון חתונה מושלמת",
   generator: "v0.dev",
 }

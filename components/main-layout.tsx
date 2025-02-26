@@ -77,7 +77,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                     <div className="p-6 border-b">
                       <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                         <Calendar className="h-6 w-6 text-primary" />
-                        <span className="text-xl font-bold">מתכנן החתונה שלך</span>
+                        <span className="text-xl font-bold">wedfull - מתכנן החתונה שלך</span>
                       </Link>
                     </div>
                     <nav className="flex flex-col p-6 space-y-6 flex-1">
@@ -135,7 +135,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               </Sheet>
               <Link href="/dashboard" className="flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary hidden md:block" />
-                <span className="text-xl font-bold gradient-text">מתכנן החתונה שלך</span>
+                <span className="text-xl font-bold gradient-text">wedfull - מתכנן החתונה שלך</span>
               </Link>
             </div>
             <div className="flex items-center gap-4">
@@ -206,7 +206,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              <p className="text-sm font-medium">מתכנן החתונה שלך</p>
+              <p className="text-sm font-medium">wedfull - מתכנן החתונה שלך</p>
             </div>
             <p className="text-center text-sm text-muted-foreground md:text-right">
               נבנה באהבה עבור היום המיוחד שלכם ❤️

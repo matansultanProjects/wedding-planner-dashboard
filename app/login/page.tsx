@@ -28,7 +28,7 @@ export default function LoginPage() {
 
       if (error.code === "auth/unauthorized-domain") {
         setAuthError(
-          "This domain is not authorized for authentication. In the v0 environment, you may need to use the demo mode.",
+          "This domain is not authorized for authentication. you may need to use the demo mode.",
         )
       } else {
         setAuthError(error.message || "An error occurred during login")
@@ -59,7 +59,7 @@ export default function LoginPage() {
         <Card className="border-none shadow-card overflow-hidden">
           <div className="bg-gradient-to-r from-primary/90 to-pink-500/90 text-white p-6 text-center">
             <CalendarHeart className="h-12 w-12 mx-auto mb-4 animate-pulse" />
-            <h1 className="text-3xl font-bold">מתכנן החתונה שלך</h1>
+            <h1 className="text-3xl font-bold">wedfull - מתכנן החתונה שלך</h1>
             <p className="text-white/80 mt-2">התחבר כדי להתחיל לתכנן את היום המיוחד שלך</p>
           </div>
           <CardContent className="p-6 pt-8">
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">או</span>
+                  <span className="bg-background px-2 text-muted-foreground">אפשר לנסות קודם מצב הדגמה </span>
                 </div>
               </div>
 

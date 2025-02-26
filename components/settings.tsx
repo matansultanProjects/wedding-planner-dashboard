@@ -74,7 +74,7 @@ export function Settings() {
         await signIn()
         toast({
           title: "התחברת בהצלחה",
-          description: "ברוך הבא למתכנן החתונה שלך!",
+          description: "ברוך הבא לwedfull - מתכנן החתונה שלך!",
         })
       }
     } catch (error) {
