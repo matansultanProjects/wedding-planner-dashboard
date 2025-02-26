@@ -13,6 +13,7 @@ const testimonials = [
     image: "/placeholder.svg?height=100&width=100",
     rating: 5,
   },
+  
   {
     name: "דניאל ושירה",
     text: "ממליצים בחום! חסך לנו המון זמן וכאב ראש בתכנון החתונה.",
@@ -52,7 +53,7 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary to-primary/30">
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary">
       {/* Hero Section */}
       <header className="container mx-auto px-4 py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>

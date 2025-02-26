@@ -55,7 +55,7 @@
     }
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/30 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-secondary to-secondary p-4">
         <div className="w-full max-w-md">
           <Card className="border-none shadow-card overflow-hidden">
             <div className="bg-gradient-to-r from-primary/90 to-pink-500/90 text-white p-6 text-center">
