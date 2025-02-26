@@ -1,7 +1,17 @@
 import type { Guest, Task, BudgetItem, Vendor, WeddingDetails } from "./types"
 
-console.log("Local Storage available:", typeof Storage !== "undefined")
-console.log("Current Local Storage content:", localStorage)
+function isLocalStorageAvailable() {
+  try {
+    localStorage.setItem("test", "test")
+    localStorage.removeItem("test")
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+// Use this function before any local storage operations
+console.log("Local Storage available:", isLocalStorageAvailable())
 
 const STORAGE_KEY = "weddingPlannerData"
 
@@ -13,42 +23,58 @@ interface StorageData {
   weddingDetails: WeddingDetails
 }
 
+function saveData(key: string, data: any) {
+  try {
+    if (isLocalStorageAvailable()) {
+      localStorage.setItem(key, JSON.stringify(data))
+    } else {
+      sessionStorage.setItem(key, JSON.stringify(data))
+    }
+  } catch (error) {
+    console.error("Error saving data:", error)
+  }
+}
+
+function getData(key: string) {
+  try {
+    const data = isLocalStorageAvailable() ? localStorage.getItem(key) : sessionStorage.getItem(key)
+    return data ? JSON.parse(data) : null
+  } catch (error) {
+    console.error("Error retrieving data:", error)
+    return null
+  }
+}
+
 export function saveToLocalStorage(data: Partial<StorageData>) {
-  console.log("Attempting to save data:", data)
   const currentData = getFromLocalStorage()
   const newData = { ...currentData, ...data }
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newData))
-    console.log("Data saved successfully")
-  } catch (error) {
-    console.error("Error saving to local storage:", error)
-  }
+  saveData(STORAGE_KEY, newData)
 }
 
 export function getFromLocalStorage(): StorageData {
-  console.log("Attempting to retrieve data from local storage")
-  const data = localStorage.getItem(STORAGE_KEY)
-  if (data) {
-    console.log("Data retrieved successfully")
-    return JSON.parse(data)
-  }
-  console.log("No data found in local storage")
-  return {
-    guests: [],
-    tasks: [],
-    budgetItems: [],
-    vendors: [],
-    weddingDetails: {
-      groomName: "",
-      brideName: "",
-      date: "",
-      venue: "",
-      estimatedGuests: 0,
-    },
-  }
+  return (
+    getData(STORAGE_KEY) || {
+      guests: [],
+      tasks: [],
+      budgetItems: [],
+      vendors: [],
+      weddingDetails: {
+        groomName: "",
+        brideName: "",
+        date: "",
+        venue: "",
+        estimatedGuests: 0,
+      },
+    }
+  )
 }
 
 export function clearLocalStorage() {
-  localStorage.removeItem(STORAGE_KEY)
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+    console.log("Local storage cleared successfully")
+  } catch (error) {
+    console.error("Error clearing local storage:", error)
+  }
 }
 
