@@ -44,3 +44,11 @@ export interface WeddingDetails {
   estimatedGuests: number
 }
 
+export interface TimelineEvent {
+  id: string
+  date: string
+  title: string
+  description: string
+  status: "completed" | "upcoming" | "warning"
+}
+

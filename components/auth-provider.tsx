@@ -11,6 +11,14 @@ import {
   type User,
 } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import {
+  dummyWeddingDetails,
+  dummyGuests,
+  dummyTasks,
+  dummyBudgetItems,
+  dummyVendors,
+  dummyTimelineEvents,
+} from "@/lib/dummyData"
 
 type AuthContextType = {
   user: User | null
@@ -75,21 +83,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOutUser = async () => {
     try {
       await signOut(auth)
-      // Also disable demo mode when signing out
       disableDemoMode()
     } catch (error) {
       console.error("Error signing out", error)
     }
   }
 
+  const saveToLocalStorage = (data: any) => {
+    for (const key in data) {
+      localStorage.setItem(key, JSON.stringify(data[key]))
+    }
+  }
+
+  const clearLocalStorage = () => {
+    localStorage.removeItem("weddingDetails")
+    localStorage.removeItem("guests")
+    localStorage.removeItem("tasks")
+    localStorage.removeItem("budgetItems")
+    localStorage.removeItem("vendors")
+    localStorage.removeItem("timelineEvents")
+  }
+
   const enableDemoMode = () => {
     setDemoMode(true)
     localStorage.setItem("demoMode", "true")
+    // Save dummy data to localStorage
+    saveToLocalStorage({
+      weddingDetails: dummyWeddingDetails,
+      guests: dummyGuests,
+      tasks: dummyTasks,
+      budgetItems: dummyBudgetItems,
+      vendors: dummyVendors,
+      timelineEvents: dummyTimelineEvents,
+    })
   }
 
   const disableDemoMode = () => {
     setDemoMode(false)
     localStorage.removeItem("demoMode")
+    // Clear dummy data from localStorage
+    clearLocalStorage()
   }
 
   return (

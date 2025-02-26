@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Heart, CalendarIcon, Users, ArrowRight, ArrowLeft } from "lucide-react"
 import type { WeddingDetails } from "@/lib/types"
-import { saveToLocalStorage } from "@/lib/storage"
+import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { useAuth } from "@/components/auth-provider"
+import { dummyWeddingDetails } from "@/lib/dummyData"
 
 const steps = [
   { id: 1, title: "פרטים בסיסיים", icon: Heart },
@@ -22,20 +24,29 @@ const steps = [
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const { user, demoMode } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
-  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>({
-    groomName: "",
-    brideName: "",
-    date: "",
-    venue: "",
-    estimatedGuests: 0,
-  })
+  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>(dummyWeddingDetails)
+
+  useEffect(() => {
+    if (demoMode) {
+      // Skip onboarding for demo mode users
+      router.push("/dashboard")
+    } else if (user) {
+      const storedData = getFromLocalStorage()
+      if (storedData.weddingDetails) {
+        setWeddingDetails(storedData.weddingDetails)
+      }
+    }
+  }, [user, demoMode, router])
 
   const handleNext = () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
     } else {
-      saveToLocalStorage({ weddingDetails })
+      if (!demoMode) {
+        saveToLocalStorage({ weddingDetails })
+      }
       router.push("/dashboard")
     }
   }
@@ -115,6 +126,7 @@ export default function OnboardingPage() {
                           placeholder="הכנס את שם החתן"
                           value={weddingDetails.groomName}
                           onChange={(e) => setWeddingDetails({ ...weddingDetails, groomName: e.target.value })}
+                          readOnly={demoMode}
                         />
                       </div>
                       <div className="space-y-2">
@@ -124,6 +136,7 @@ export default function OnboardingPage() {
                           placeholder="הכנס את שם הכלה"
                           value={weddingDetails.brideName}
                           onChange={(e) => setWeddingDetails({ ...weddingDetails, brideName: e.target.value })}
+                          readOnly={demoMode}
                         />
                       </div>
                     </div>
@@ -142,6 +155,7 @@ export default function OnboardingPage() {
                         selected={weddingDetails.date ? new Date(weddingDetails.date) : undefined}
                         onSelect={(date) => date && setWeddingDetails({ ...weddingDetails, date: date.toISOString() })}
                         className="rounded-md border"
+                        disabled={demoMode}
                       />
                     </div>
                   </div>
@@ -159,6 +173,7 @@ export default function OnboardingPage() {
                         <Select
                           value={weddingDetails.venue}
                           onValueChange={(value) => setWeddingDetails({ ...weddingDetails, venue: value })}
+                          disabled={demoMode}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="בחר מקום" />
@@ -181,6 +196,7 @@ export default function OnboardingPage() {
                           onChange={(e) =>
                             setWeddingDetails({ ...weddingDetails, estimatedGuests: Number(e.target.value) })
                           }
+                          readOnly={demoMode}
                         />
                       </div>
                     </div>

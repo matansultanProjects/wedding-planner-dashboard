@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/components/auth-provider"
+import { dummyWeddingDetails, dummyGuests, dummyTasks, dummyBudgetItems, dummyTimelineEvents } from "@/lib/dummyData"
 
 interface TimelineEvent {
   id: string
@@ -21,6 +23,7 @@ interface TimelineEvent {
 }
 
 export function Overview() {
+  const { demoMode } = useAuth()
   const [guests, setGuests] = useState<Guest[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
@@ -29,16 +32,27 @@ export function Overview() {
   const [couplePhoto, setCouplePhoto] = useState<string | null>(null)
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    setGuests(storedData.guests || [])
-    setTasks(storedData.tasks || [])
-    setBudgetItems(storedData.budgetItems || [])
-    setWeddingDetails(storedData.weddingDetails || null)
-    setTimelineEvents(storedData.timelineEvents || [])
-    setCouplePhoto(storedData.couplePhoto || null)
-  }, [])
+    if (demoMode) {
+      setGuests(dummyGuests)
+      setTasks(dummyTasks)
+      setBudgetItems(dummyBudgetItems)
+      setWeddingDetails(dummyWeddingDetails)
+      setTimelineEvents(dummyTimelineEvents)
+      setCouplePhoto("/placeholder.svg") // Use a placeholder image for demo mode
+    } else {
+      const storedData = getFromLocalStorage()
+      setGuests(storedData.guests || [])
+      setTasks(storedData.tasks || [])
+      setBudgetItems(storedData.budgetItems || [])
+      setWeddingDetails(storedData.weddingDetails || null)
+      setTimelineEvents(storedData.timelineEvents || [])
+      setCouplePhoto(storedData.couplePhoto || null)
+    }
+  }, [demoMode])
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (demoMode) return // Prevent photo upload in demo mode
+
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
