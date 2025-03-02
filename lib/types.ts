@@ -21,8 +21,9 @@ export interface BudgetItem {
   id: string
   category: string
   description: string
-  estimatedCost: number
-  actualCost: number
+  planned: number
+  deposit: number
+  actual: number | null
 }
 
 export interface Vendor {
@@ -32,8 +33,8 @@ export interface Vendor {
   contact: string
   phone: string
   email: string
+  cost: number
   status: "מאושר" | "בתהליך" | "לא מאושר"
-  rating: number
 }
 
 export interface WeddingDetails {
@@ -50,5 +51,12 @@ export interface TimelineEvent {
   title: string
   description: string
   status: "completed" | "upcoming" | "warning"
+}
+
+export interface Table {
+  id: string
+  name: string
+  seats: number
+  guests: string[]
 }
 

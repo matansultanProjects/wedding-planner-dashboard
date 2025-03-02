@@ -5,6 +5,7 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { LanguageDetector } from "@/components/language-detector"
 
 // Load Heebo font with Hebrew and Latin subsets
 const heebo = Heebo({
@@ -32,18 +33,21 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="he" dir="rtl" suppressHydrationWarning>
+    <html lang="he" dir="rtl" suppressHydrationWarning className="scroll-smooth">
       <body className={`${heebo.variable} ${rubik.variable} font-sans`}>
-        <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
+            <LanguageDetector />
             {children}
             <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
 }
+
+import "./globals.css"
 
 
 

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { motion } from "framer-motion"
 import { CalendarHeart, Check, ArrowRight, Star, Users, DollarSign, Clock, Briefcase } from "lucide-react"
+import { SupportChat } from "@/components/support-chat"
+import { useTranslation } from "@/hooks/useTranslation"
 
 const testimonials = [
   {
@@ -30,32 +32,33 @@ const testimonials = [
 
 const features = [
   {
-    title: "ניהול אורחים",
-    description: "נהל את רשימת האורחים, אישורי הגעה וסידורי הישיבה בקלות",
+    title: "guestManagement",
+    description: "guestManagementDescription",
     icon: Users,
   },
   {
-    title: "ניהול תקציב",
-    description: "עקוב אחר ההוצאות והתשלומים שלך בצורה חכמה",
+    title: "budgetManagement",
+    description: "budgetManagementDescription",
     icon: DollarSign,
   },
   {
-    title: "ניהול ספקים",
-    description: "רכז את כל הספקים, החוזים והתשלומים במקום אחד",
+    title: "vendorManagement",
+    description: "vendorManagementDescription",
     icon: Briefcase,
   },
   {
-    title: "ניהול משימות",
-    description: "קבל תזכורות ועקוב אחר המשימות החשובות לקראת היום הגדול",
+    title: "taskManagement",
+    description: "taskManagementDescription",
     icon: Clock,
   },
 ]
 
 export default function LandingPage() {
+  const { t } = useTranslation()
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary/70 to-secondary/30">
       {/* Navigation */}
-      <nav className="bg-gradient-to-r from-primary/90 to-pink-500/90 container mx-auto px-4 py-6" >
+      <nav className="bg-gradient-to-r from-primary/90 to-pink-500/90 container mx-auto px-4 py-6">
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
             <Image src="/12-removebg-preview.png" alt="Wedfull Logo" width={100} height={100} />
@@ -63,9 +66,8 @@ export default function LandingPage() {
           </Link>
           <div className="space-x-4">
             <Link href="/login">
-              <Button variant="ghost">התחברות</Button>
+              <Button variant="ghost">{t("login")}</Button>
             </Link>
-           
           </div>
         </div>
       </nav>
@@ -78,24 +80,18 @@ export default function LandingPage() {
           transition={{ duration: 0.5 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text leading-tight">
-            תכנון החתונה שלכם
-            <br />
-            פשוט יותר מתמיד
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-            פלטפורמה חכמה לניהול כל פרטי החתונה במקום אחד, מותאמת במיוחד לזוגות ישראלים
-          </p>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text leading-tight">{t("landingPageTitle")}</h1>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8">{t("landingPageDescription")}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/login">
               <Button size="lg" className="text-lg px-8 h-12 animate-pulse">
-                התחל עכשיו בחינם
+                {t("startFree")}
                 <ArrowRight className="mr-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="#features">
               <Button size="lg" variant="outline" className="text-lg px-8 h-12">
-                גלה עוד
+                {t("learnMore")}
               </Button>
             </Link>
           </div>
@@ -104,9 +100,7 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section id="features" className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">
-          כל מה שצריך לתכנון החתונה המושלמת
-        </h2>
+        <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">{t("featuresTitle")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
             <motion.div
@@ -120,8 +114,8 @@ export default function LandingPage() {
                   <div className="text-4xl mb-4 bg-primary/10 text-primary rounded-full w-16 h-16 flex items-center justify-center">
                     <feature.icon className="h-8 w-8" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-2">{t(feature.title)}</h3>
+                  <p className="text-muted-foreground">{t(feature.description)}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -133,16 +127,16 @@ export default function LandingPage() {
       <section className="container mx-auto px-4 py-20 bg-muted/30 rounded-3xl my-12">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 gradient-text">למה לבחור ב-Wedfull?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 gradient-text">{t("whyWedfull")}</h2>
             <div className="space-y-4">
               {[
-                "ממשק משתמש נוח ואינטואיטיבי",
-                "גישה מכל מקום ומכל מכשיר",
-                "תבניות מוכנות מראש לתכנון מהיר",
-                "התראות ותזכורות חכמות",
-                "שיתוף פעולה עם בן/בת הזוג וספקים",
-                "תמיכה בעברית ובמנהגי חתונות ישראליות",
-                "אבטחה מתקדמת לשמירה על פרטיותכם",
+                "userFriendlyInterface",
+                "accessibleFromAnywhere",
+                "readyMadeTemplates",
+                "smartNotifications",
+                "collaborationWithPartner",
+                "supportInHebrew",
+                "advancedSecurity",
               ].map((benefit, index) => (
                 <motion.div
                   key={index}
@@ -154,7 +148,7 @@ export default function LandingPage() {
                   <div className="bg-primary/10 rounded-full p-1 mt-0.5">
                     <Check className="h-4 w-4 text-primary" />
                   </div>
-                  <p>{benefit}</p>
+                  <p>{t(benefit)}</p>
                 </motion.div>
               ))}
             </div>
@@ -166,7 +160,7 @@ export default function LandingPage() {
             >
               <Link href="/login">
                 <Button size="lg" className="gap-2">
-                  התחל לתכנן עכשיו
+                  {t("startPlanning")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -186,7 +180,7 @@ export default function LandingPage() {
               className="rounded-lg shadow-2xl"
             />
             <div className="absolute -bottom-6 -right-6 bg-background rounded-xl shadow-card p-4 max-w-xs">
-              <p className="text-sm font-medium">"תכנון החתונה שלנו היה פשוט וקל בזכות Wedfull!"</p>
+              <p className="text-sm font-medium">{t("testimonialQuote")}</p>
             </div>
           </motion.div>
         </div>
@@ -194,12 +188,12 @@ export default function LandingPage() {
 
       {/* How It Works Section */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">איך זה עובד?</h2>
+        <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">{t("howItWorks")}</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { title: "הירשמו בקלות", description: "צרו חשבון חינמי ב-Wedfull תוך דקות", icon: CalendarHeart },
-            { title: "התחילו לתכנן", description: "השתמשו בכלים שלנו לניהול אורחים, תקציב ומשימות", icon: Check },
-            { title: "חגגו בגדול", description: "התרכזו בחגיגה בזמן ש-Wedfull מטפל בפרטים הקטנים", icon: Users },
+            { title: "easyRegistration", description: "easyRegistrationDescription", icon: CalendarHeart },
+            { title: "startPlanningNow", description: "startPlanningNowDescription", icon: Check },
+            { title: "celebrateBig", description: "celebrateBigDescription", icon: Users },
           ].map((step, index) => (
             <motion.div
               key={step.title}
@@ -211,8 +205,8 @@ export default function LandingPage() {
               <div className="bg-primary/10 text-primary rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
                 <step.icon className="h-10 w-10" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-              <p className="text-muted-foreground">{step.description}</p>
+              <h3 className="text-xl font-semibold mb-2">{t(step.title)}</h3>
+              <p className="text-muted-foreground">{t(step.description)}</p>
             </motion.div>
           ))}
         </div>
@@ -220,7 +214,7 @@ export default function LandingPage() {
 
       {/* Testimonials Section */}
       <section className="container mx-auto px-4 py-20 bg-muted/30 rounded-3xl my-12">
-        <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">זוגות מספרים</h2>
+        <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">{t("testimonialsTitle")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -259,13 +253,11 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 gradient-text">מוכנים להתחיל לתכנן את החתונה שלכם?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            הצטרפו לאלפי זוגות שכבר משתמשים ב-Wedfull לתכנון החתונה המושלמת
-          </p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 gradient-text">{t("ctaTitle")}</h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t("ctaDescription")}</p>
           <Link href="/login">
             <Button size="lg" className="text-lg px-8 h-12 animate-pulse">
-              צור חשבון בחינם
+              {t("createFreeAccount")}
               <ArrowRight className="mr-2 h-5 w-5" />
             </Button>
           </Link>
@@ -277,13 +269,10 @@ export default function LandingPage() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <Image src="/12-removebg-preview.png" alt="Wedfull Logo" width={150} height={150} className="mr-2" />
-            {/* <span className="font-bold text-lg gradient-text">Wedfull</span> */}
           </div>
           <nav className="flex space-x-4 mb-4 md:mb-0">
-      
-      
             <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              עזרה ותמיכה 
+              {t("helpAndSupport")}
             </Link>
           </nav>
           <div className="flex space-x-4">
@@ -298,8 +287,9 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-        <div className="mt-8 text-center text-sm text-muted-foreground">© 2024 Wedfull. כל הזכויות שמורות.</div>
+        <div className="mt-8 text-center text-sm text-muted-foreground">© 2024 Wedfull. {t("allRightsReserved")}</div>
       </footer>
+      <SupportChat />
     </div>
   )
 }
