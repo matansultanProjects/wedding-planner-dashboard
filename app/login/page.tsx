@@ -3,53 +3,58 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
-import { useToast } from "@/components/ui/use-toast"
+import { useCustomToast } from "@/components/ui/custom-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { CalendarHeart, AlertCircle } from "lucide-react"
 import Image from "next/image"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import Link from "next/link"
+import { Checkbox } from "@/components/ui/checkbox"
+import { SupportChat } from "@/components/support-chat"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
+  //const { toast } = useToast()
+  const customToast = useCustomToast()
   const { signIn, enableDemoMode } = useAuth()
 
   const handleSignIn = async () => {
+    if (!acceptedTerms) {
+      customToast.warning("תנאי שימוש", "יש לאשר את תנאי השימוש ומדיניות הפרטיות כדי להמשיך")
+      return
+    }
     setIsLoading(true)
     setAuthError(null)
     try {
       await signIn()
+      customToast.success("התחברות הצליחה", "ברוכים הבאים ל-wedfull!")
       router.push("/onboarding")
     } catch (error: any) {
       console.error("Login error:", error)
 
       if (error.code === "auth/unauthorized-domain") {
-        setAuthError(
-          "This domain is not authorized for authentication. you may need to use the demo mode.",
-        )
+        setAuthError("This domain is not authorized for authentication. you may need to use the demo mode.")
       } else {
         setAuthError(error.message || "An error occurred during login")
       }
 
-      toast({
-        title: "שגיאת התחברות",
-        description: "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר יותר.",
-        variant: "destructive",
-      })
+      customToast.error("שגיאת התחברות", "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר יותר.")
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleDemoLogin = () => {
+    if (!acceptedTerms) {
+      customToast.warning("תנאי שימוש", "יש לאשר את תנאי השימוש ומדיניות הפרטיות כדי להמשיך")
+      return
+    }
     enableDemoMode()
-    toast({
-      title: "מצב הדגמה",
-      description: "נכנסת למערכת במצב הדגמה",
-    })
+    customToast.success("מצב הדגמה", "נכנסת למערכת במצב הדגמה")
     router.push("/onboarding")
   }
 
@@ -101,6 +106,20 @@ export default function LoginPage() {
               </Button>
             </div>
           </CardContent>
+          <div className="flex items-center space-x-2 space-x-reverse mt-4">
+            <Checkbox
+              id="terms"
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+            />
+            <label htmlFor="terms" className="text-sm text-muted-foreground">
+              אני מסכים/ה ל
+              <Link href="/terms" className="text-primary hover:underline mx-1">
+                תנאי השימוש ומדיניות הפרטיות
+              </Link>
+              של wedfull
+            </label>
+          </div>
           <CardFooter className="flex flex-col items-center p-6 pt-0 gap-4">
             <p className="text-sm text-muted-foreground text-center">
               בלחיצה על "התחבר", אתה מסכים לתנאי השימוש ולמדיניות הפרטיות שלנו.
@@ -108,6 +127,7 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
       </div>
+      <SupportChat />
     </div>
   )
 }

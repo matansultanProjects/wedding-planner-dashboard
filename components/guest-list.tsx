@@ -14,12 +14,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import * as XLSX from "xlsx"
-import { useToast } from "@/components/ui/use-toast"
+import { useCustomToast } from "@/components/ui/custom-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useTranslation } from "react-i18next"
 
 export function GuestList() {
-  const { toast } = useToast()
+  const customToast = useCustomToast()
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRelation, setFilterRelation] = useState<string | null>(null)
@@ -27,6 +28,7 @@ export function GuestList() {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const storedData = getFromLocalStorage()
@@ -70,10 +72,7 @@ export function GuestList() {
         setGuests(updatedGuests)
         saveToLocalStorage({ guests: updatedGuests })
 
-        toast({
-          title: "ייבוא הושלם",
-          description: `${newGuests.length} אורחים יובאו בהצלחה`,
-        })
+        customToast.success(t("importSuccess"), t("importSuccessDescription", { count: newGuests.length }))
       }
       reader.readAsArrayBuffer(file)
     }
@@ -98,7 +97,7 @@ export function GuestList() {
   const filteredGuests = guests.filter((guest) => {
     const matchesSearch =
       guest.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || guest.phoneNumber.includes(searchTerm)
-    const matchesFilter = !filterRelation || filterRelation === "כל הקשרים" || guest.relation === filterRelation
+    const matchesFilter = !filterRelation || filterRelation === t("allRelations") || guest.relation === filterRelation
     return matchesSearch && matchesFilter
   })
 
@@ -108,9 +107,9 @@ export function GuestList() {
         id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         fullName: newGuest.fullName,
         phoneNumber: newGuest.phoneNumber || "",
-        relation: (newGuest.relation as Guest["relation"]) || "חברים",
+        relation: (newGuest.relation as Guest["relation"]) || t("friends"),
         invitedCount: newGuest.invitedCount || 1,
-        confirmed: (newGuest.confirmed as Guest["confirmed"]) || "אולי",
+        confirmed: (newGuest.confirmed as Guest["confirmed"]) || t("maybe"),
         specialNotes: newGuest.specialNotes || "",
       }
       const updatedGuests = [...guests, guestToAdd]
@@ -118,10 +117,7 @@ export function GuestList() {
       saveToLocalStorage({ guests: updatedGuests })
       setNewGuest({})
       setIsAddDialogOpen(false)
-      toast({
-        title: "אורח נוסף",
-        description: `${guestToAdd.fullName} נוסף בהצלחה לרשימת האורחים`,
-      })
+      customToast.success(t("guestAdded"), t("guestAddedDescription", { name: guestToAdd.fullName }))
     }
   }
 
@@ -137,10 +133,7 @@ export function GuestList() {
       saveToLocalStorage({ guests: updatedGuests })
       setEditingGuest(null)
       setIsEditDialogOpen(false)
-      toast({
-        title: "אורח עודכן",
-        description: "פרטי האורח עודכנו בהצלחה",
-      })
+      customToast.success(t("guestUpdated"), t("guestUpdatedDescription"))
     }
   }
 
@@ -149,10 +142,7 @@ export function GuestList() {
     const updatedGuests = guests.filter((guest) => guest.id !== id)
     setGuests(updatedGuests)
     saveToLocalStorage({ guests: updatedGuests })
-    toast({
-      title: "אורח הוסר",
-      description: `${guestName} הוסר מרשימת האורחים`,
-    })
+    customToast.success(t("guestRemoved"), t("guestRemovedDescription", { name: guestName }))
   }
 
   // Calculate statistics
@@ -172,33 +162,33 @@ export function GuestList() {
       <Card className="shadow-card border-none overflow-hidden">
         <div className="bg-gradient-to-r from-primary/90 to-pink-500/90 text-white">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-white">רשימת אורחים</CardTitle>
-            <CardDescription className="text-white/80">נהל את רשימת המוזמנים שלך</CardDescription>
+            <CardTitle className="text-2xl font-bold text-white">{t("guestListTitle")}</CardTitle>
+            <CardDescription className="text-white/80">{t("manageGuestList")}</CardDescription>
           </CardHeader>
         </div>
         <CardContent className="pt-6">
           <div className="grid gap-6 md:grid-cols-4">
             <Card className="bg-secondary/30 border-none">
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium text-muted-foreground">סך הכל אורחים</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("totalGuests")}</p>
                 <p className="text-3xl font-bold">{totalGuests}</p>
               </CardContent>
             </Card>
             <Card className="bg-success/10 border-none">
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium text-muted-foreground">אישרו הגעה</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("confirmedGuests")}</p>
                 <p className="text-3xl font-bold text-success">{confirmedGuests}</p>
               </CardContent>
             </Card>
             <Card className="bg-warning/10 border-none">
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium text-muted-foreground">טרם אישרו</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("pendingGuests")}</p>
                 <p className="text-3xl font-bold text-warning">{pendingGuests}</p>
               </CardContent>
             </Card>
             <Card className="bg-destructive/10 border-none">
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium text-muted-foreground">לא מגיעים</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("declinedGuests")}</p>
                 <p className="text-3xl font-bold text-destructive">{declinedGuests}</p>
               </CardContent>
             </Card>
@@ -208,7 +198,7 @@ export function GuestList() {
             <div className="relative w-full md:w-auto md:flex-1">
               <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="חיפוש אורחים..."
+                placeholder={t("searchGuests")}
                 className="pr-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -220,20 +210,22 @@ export function GuestList() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1">
                     <Filter className="h-4 w-4" />
-                    סינון
+                    {t("filter")}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setFilterRelation("כל הקשרים")}>כל הקשרים</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilterRelation("משפחה")}>משפחה</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilterRelation("חברים")}>חברים</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilterRelation("עבודה")}>עבודה</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterRelation(t("allRelations"))}>
+                    {t("allRelations")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterRelation("משפחה")}>{t("family")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterRelation("חברים")}>{t("friends")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterRelation("עבודה")}>{t("work")}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
                 <Upload className="h-4 w-4 mr-1" />
-                ייבוא
+                {t("import")}
                 <input
                   id="file-upload"
                   type="file"
@@ -245,24 +237,24 @@ export function GuestList() {
 
               <Button variant="outline" size="sm" onClick={handleExportExcel}>
                 <Download className="h-4 w-4 mr-1" />
-                ייצוא
+                {t("export")}
               </Button>
 
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
                     <UserPlus className="h-4 w-4 mr-1" />
-                    הוסף אורח
+                    {t("addGuest")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
-                    <DialogTitle>הוסף אורח חדש</DialogTitle>
+                    <DialogTitle>{t("addGuestTitle")}</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="name" className="text-right">
-                        שם מלא
+                        {t("fullName")}
                       </Label>
                       <Input
                         id="name"
@@ -273,7 +265,7 @@ export function GuestList() {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="phone" className="text-right">
-                        טלפון
+                        {t("phone")}
                       </Label>
                       <Input
                         id="phone"
@@ -284,25 +276,25 @@ export function GuestList() {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="relation" className="text-right">
-                        קשר
+                        {t("relation")}
                       </Label>
                       <Select
                         value={newGuest.relation}
                         onValueChange={(value) => setNewGuest({ ...newGuest, relation: value as Guest["relation"] })}
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="בחר קשר" />
+                          <SelectValue placeholder={t("selectRelation")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="משפחה">משפחה</SelectItem>
-                          <SelectItem value="חברים">חברים</SelectItem>
-                          <SelectItem value="עבודה">עבודה</SelectItem>
+                          <SelectItem value="משפחה">{t("family")}</SelectItem>
+                          <SelectItem value="חברים">{t("friends")}</SelectItem>
+                          <SelectItem value="עבודה">{t("work")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="count" className="text-right">
-                        כמות מוזמנים
+                        {t("invitedCount")}
                       </Label>
                       <Input
                         id="count"
@@ -314,25 +306,25 @@ export function GuestList() {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="confirmed" className="text-right">
-                        אישור הגעה
+                        {t("confirmed")}
                       </Label>
                       <Select
                         value={newGuest.confirmed}
                         onValueChange={(value) => setNewGuest({ ...newGuest, confirmed: value as Guest["confirmed"] })}
                       >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="בחר סטטוס" />
+                          <SelectValue placeholder={t("selectStatus")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="כן">כן</SelectItem>
-                          <SelectItem value="לא">לא</SelectItem>
-                          <SelectItem value="אולי">אולי</SelectItem>
+                          <SelectItem value="כן">{t("yes")}</SelectItem>
+                          <SelectItem value="לא">{t("no")}</SelectItem>
+                          <SelectItem value="אולי">{t("maybe")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="notes" className="text-right">
-                        הערות
+                        {t("notes")}
                       </Label>
                       <Input
                         id="notes"
@@ -344,16 +336,16 @@ export function GuestList() {
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                      ביטול
+                      {t("cancel")}
                     </Button>
-                    <Button onClick={handleAddGuest}>הוסף אורח</Button>
+                    <Button onClick={handleAddGuest}>{t("addGuest")}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
           </div>
 
-          {filterRelation && filterRelation !== "כל הקשרים" && (
+          {filterRelation && filterRelation !== t("allRelations") && (
             <div className="flex items-center mt-2">
               <Badge variant="secondary" className="gap-1">
                 {filterRelation}
@@ -370,8 +362,8 @@ export function GuestList() {
 
         <Tabs defaultValue="table" className="px-6">
           <TabsList className="mb-4">
-            <TabsTrigger value="table">טבלה</TabsTrigger>
-            <TabsTrigger value="cards">כרטיסים</TabsTrigger>
+            <TabsTrigger value="table">{t("table")}</TabsTrigger>
+            <TabsTrigger value="cards">{t("cards")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="table">
@@ -379,13 +371,13 @@ export function GuestList() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>שם</TableHead>
-                    <TableHead>טלפון</TableHead>
-                    <TableHead>קשר</TableHead>
-                    <TableHead>כמות</TableHead>
-                    <TableHead>אישור</TableHead>
-                    <TableHead>הערות</TableHead>
-                    <TableHead>פעולות</TableHead>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("phone")}</TableHead>
+                    <TableHead>{t("relation")}</TableHead>
+                    <TableHead>{t("count")}</TableHead>
+                    <TableHead>{t("confirmed")}</TableHead>
+                    <TableHead>{t("notes")}</TableHead>
+                    <TableHead>{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -421,7 +413,7 @@ export function GuestList() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                        לא נמצאו אורחים
+                        {t("noGuestsFound")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -451,16 +443,16 @@ export function GuestList() {
                       </div>
                       <div className="mt-4 space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">טלפון:</span>
+                          <span className="font-medium">{t("phone")}:</span>
                           <span>{guest.phoneNumber}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">כמות מוזמנים:</span>
+                          <span className="font-medium">{t("invitedCount")}:</span>
                           <span>{guest.invitedCount}</span>
                         </div>
                         {guest.specialNotes && (
                           <div className="flex items-start gap-2">
-                            <span className="font-medium">הערות:</span>
+                            <span className="font-medium">{t("notes")}:</span>
                             <span className="text-muted-foreground">{guest.specialNotes}</span>
                           </div>
                         )}
@@ -468,11 +460,11 @@ export function GuestList() {
                       <div className="flex justify-end gap-2 mt-4">
                         <Button variant="outline" size="sm" onClick={() => handleEditGuest(guest)}>
                           <Edit className="h-3 w-3 mr-1" />
-                          ערוך
+                          {t("edit")}
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => handleDeleteGuest(guest.id)}>
                           <Trash className="h-3 w-3 mr-1" />
-                          הסר
+                          {t("remove")}
                         </Button>
                       </div>
                     </CardContent>
@@ -481,7 +473,7 @@ export function GuestList() {
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
-                <p>לא נמצאו אורחים</p>
+                <p>{t("noGuestsFound")}</p>
               </div>
             )}
           </TabsContent>
@@ -489,13 +481,13 @@ export function GuestList() {
 
         <CardFooter className="flex justify-between border-t p-4">
           <div className="text-sm text-muted-foreground">
-            סה"כ: {filteredGuests.length} אורחים ({filteredGuests.reduce((sum, guest) => sum + guest.invitedCount, 0)}{" "}
-            מוזמנים)
+            {t("total")}: {filteredGuests.length} {t("guests")} (
+            {filteredGuests.reduce((sum, guest) => sum + guest.invitedCount, 0)} {t("invited")})
           </div>
           {guests.length > 0 && (
             <Button variant="outline" size="sm" onClick={handleExportExcel}>
               <Download className="h-4 w-4 mr-1" />
-              ייצא לאקסל
+              {t("exportToExcel")}
             </Button>
           )}
         </CardFooter>
@@ -504,13 +496,13 @@ export function GuestList() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>ערוך פרטי אורח</DialogTitle>
+            <DialogTitle>{t("editGuestDetails")}</DialogTitle>
           </DialogHeader>
           {editingGuest && (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-name" className="text-right">
-                  שם מלא
+                  {t("fullName")}
                 </Label>
                 <Input
                   id="edit-name"
@@ -521,7 +513,7 @@ export function GuestList() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-phone" className="text-right">
-                  טלפון
+                  {t("phone")}
                 </Label>
                 <Input
                   id="edit-phone"
@@ -532,25 +524,25 @@ export function GuestList() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-relation" className="text-right">
-                  קשר
+                  {t("relation")}
                 </Label>
                 <Select
                   value={editingGuest.relation}
                   onValueChange={(value) => setEditingGuest({ ...editingGuest, relation: value as Guest["relation"] })}
                 >
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="בחר קשר" />
+                    <SelectValue placeholder={t("selectRelation")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="משפחה">משפחה</SelectItem>
-                    <SelectItem value="חברים">חברים</SelectItem>
-                    <SelectItem value="עבודה">עבודה</SelectItem>
+                    <SelectItem value="משפחה">{t("family")}</SelectItem>
+                    <SelectItem value="חברים">{t("friends")}</SelectItem>
+                    <SelectItem value="עבודה">{t("work")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-count" className="text-right">
-                  כמות מוזמנים
+                  {t("invitedCount")}
                 </Label>
                 <Input
                   id="edit-count"
@@ -562,7 +554,7 @@ export function GuestList() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-confirmed" className="text-right">
-                  אישור הגעה
+                  {t("confirmed")}
                 </Label>
                 <Select
                   value={editingGuest.confirmed}
@@ -571,18 +563,18 @@ export function GuestList() {
                   }
                 >
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="בחר סטטוס" />
+                    <SelectValue placeholder={t("selectStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="כן">כן</SelectItem>
-                    <SelectItem value="לא">לא</SelectItem>
-                    <SelectItem value="אולי">אולי</SelectItem>
+                    <SelectItem value="כן">{t("yes")}</SelectItem>
+                    <SelectItem value="לא">{t("no")}</SelectItem>
+                    <SelectItem value="אולי">{t("maybe")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-notes" className="text-right">
-                  הערות מיוחדות
+                  {t("notes")}
                 </Label>
                 <Input
                   id="edit-notes"
@@ -595,9 +587,9 @@ export function GuestList() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              ביטול
+              {t("cancel")}
             </Button>
-            <Button onClick={handleUpdateGuest}>עדכן פרטי אורח</Button>
+            <Button onClick={handleUpdateGuest}>{t("updateGuestDetails")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

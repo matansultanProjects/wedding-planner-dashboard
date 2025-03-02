@@ -9,15 +9,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { clearLocalStorage } from "@/lib/storage"
 import { Moon, Palette, User, DollarSign } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
-import { useToast } from "@/components/ui/use-toast"
+import { useCustomToast } from "@/components/ui/custom-toast"
 import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
+import { useTranslation } from "@/lib/i18n"
 
 export function Settings() {
   const { theme, setTheme } = useTheme()
-  const [language, setLanguage] = useState("he")
+  const [language, setLanguage] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("language") || "he"
+    }
+    return "he"
+  })
   const [colorScheme, setColorScheme] = useState("default")
   const { user, signIn, signOut } = useAuth()
-  const { toast } = useToast()
+  const customToast = useCustomToast()
+  const router = useRouter()
+  const { t, changeLanguage } = useTranslation()
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language") || "he"
@@ -29,36 +38,45 @@ export function Settings() {
   }, [])
 
   const handleThemeChange = () => {
-    setTheme(theme === "light" ? "dark" : "light")
+    const newTheme = theme === "light" ? "dark" : "light"
+    setTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
   }
 
   const handleLanguageChange = (newLanguage: string) => {
+    if (typeof newLanguage !== "string" || newLanguage.length === 0) {
+      console.error("Invalid language value:", newLanguage)
+      return
+    }
     setLanguage(newLanguage)
     localStorage.setItem("language", newLanguage)
     document.documentElement.dir = newLanguage === "he" ? "rtl" : "ltr"
-    toast({
-      title: "שפה עודכנה",
-      description: "הגדרות השפה עודכנו בהצלחה",
-    })
+    document.documentElement.lang = newLanguage
+
+    // Show toast before refresh
+    customToast.success(
+      newLanguage === "he" ? "השפה עודכנה" : "Language Updated",
+      newLanguage === "he" ? "השפה עודכנה בהצלחה" : "Language has been updated successfully",
+    )
+
+    // Use router.refresh() instead of window.location.reload()
+    setTimeout(() => {
+      router.refresh()
+    }, 1500)
   }
 
   const handleColorSchemeChange = (newColorScheme: string) => {
     setColorScheme(newColorScheme)
     localStorage.setItem("colorScheme", newColorScheme)
     document.documentElement.setAttribute("data-color-scheme", newColorScheme)
-    toast({
-      title: "ערכת נושא עודכנה",
-      description: "ערכת הנושא עודכנה בהצלחה",
-    })
+    setTheme(newColorScheme)
+    customToast.success(t("themeUpdated"), t("themeUpdatedDescription"))
   }
 
   const handleClearData = () => {
-    if (confirm("האם אתה בטוח שברצונך למחוק את כל הנתונים? פעולה זו בלתי הפיכה.")) {
+    if (confirm(t("confirmClearData"))) {
       clearLocalStorage()
-      toast({
-        title: "נתונים נמחקו",
-        description: "כל הנתונים נמחקו בהצלחה",
-      })
+      customToast.success(t("dataCleared"), t("dataClearedDescription"))
     }
   }
 
@@ -66,24 +84,14 @@ export function Settings() {
     try {
       if (user) {
         await signOut()
-        toast({
-          title: "התנתקת בהצלחה",
-          description: "התנתקת מהחשבון שלך.",
-        })
+        customToast.success(t("signOutSuccess"), t("signOutSuccessDescription"))
       } else {
         await signIn()
-        toast({
-          title: "התחברת בהצלחה",
-          description: "ברוך הבא לwedfull - מתכנן החתונה שלך!",
-        })
+        customToast.success(t("signInSuccess"), t("signInSuccessDescription"))
       }
     } catch (error) {
       console.error("Authentication error:", error)
-      toast({
-        title: "שגיאת אימות",
-        description: "אירעה שגיאה במהלך ההתחברות. אנא נסה שוב מאוחר יותר.",
-        variant: "destructive",
-      })
+      customToast.error(t("authError"), t("authErrorDescription"))
     }
   }
 
@@ -93,54 +101,53 @@ export function Settings() {
         <CardHeader>
           <CardTitle>
             <User className="inline-block mr-2" />
-            חשבון
+            {t("account")}
           </CardTitle>
-          <CardDescription>נהל את הגדרות החשבון שלך</CardDescription>
+          <CardDescription>{t("manageAccountSettings")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleAuth}>{user ? "התנתק" : "התחבר עם Google"}</Button>
-          {user && <p className="mt-4">מחובר כ: {user.email}</p>}
+          <Button onClick={handleAuth}>{user ? t("signOut") : t("signInWithGoogle")}</Button>
+          {user && <p className="mt-4">{t("loggedInAs", { email: user.email })}</p>}
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
           <CardTitle>
             <Palette className="inline-block mr-2" />
-            הגדרות תצוגה
+            {t("displaySettings")}
           </CardTitle>
-          <CardDescription>התאם את העדפות המערכת שלך</CardDescription>
+          <CardDescription>{t("customizeSystemPreferences")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="theme-toggle" className="flex items-center">
               <Moon className="mr-2 h-4 w-4" />
-              מצב כהה
+              {t("darkMode")}
             </Label>
             <Switch id="theme-toggle" checked={theme === "dark"} onCheckedChange={handleThemeChange} />
           </div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="language-select">שפה</Label>
+            <Label htmlFor="language-select">{t("language")}</Label>
             <Select value={language} onValueChange={handleLanguageChange}>
               <SelectTrigger id="language-select">
-                <SelectValue placeholder="בחר שפה" />
+                <SelectValue placeholder={t("chooseLanguage")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="he">עברית</SelectItem>
-                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="he">{t("hebrew")}</SelectItem>
+                <SelectItem value="en">{t("english")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="color-scheme-select">סכמת צבעים</Label>
+            <Label htmlFor="color-scheme-select">{t("colorScheme")}</Label>
             <Select value={colorScheme} onValueChange={handleColorSchemeChange}>
               <SelectTrigger id="color-scheme-select">
-                <SelectValue placeholder="בחר סכמת צבעים" />
+                <SelectValue placeholder={t("chooseColorScheme")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">ברירת מחדל</SelectItem>
-                <SelectItem value="warm">חם</SelectItem>
-                <SelectItem value="cool">קריר</SelectItem>
-                <SelectItem value="pastel">פסטל</SelectItem>
+                <SelectItem value="light">{t("light")}</SelectItem>
+                <SelectItem value="dark">{t("dark")}</SelectItem>
+                <SelectItem value="system">{t("system")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -150,23 +157,23 @@ export function Settings() {
         <CardHeader>
           <CardTitle>
             <DollarSign className="inline-block mr-2" />
-            תכונות בתשלום
+            {t("paidFeatures")}
           </CardTitle>
-          <CardDescription>נהל את התכונות בתשלום שלך</CardDescription>
+          <CardDescription>{t("managePaidFeatures")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">תכונות בתשלום יהיו זמינות בקרוב!</p>
-          <Button disabled>שדרג לפרימיום</Button>
+          <p className="mb-4">{t("paidFeaturesComingSoon")}</p>
+          <Button disabled>{t("upgradeToPremium")}</Button>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-destructive">מחיקת נתונים</CardTitle>
-          <CardDescription>מחק את כל הנתונים שלך מהמערכת</CardDescription>
+          <CardTitle className="text-destructive">{t("deleteData")}</CardTitle>
+          <CardDescription>{t("deleteAllDataDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={handleClearData}>
-            מחק את כל הנתונים
+            {t("deleteAllData")}
           </Button>
         </CardContent>
       </Card>

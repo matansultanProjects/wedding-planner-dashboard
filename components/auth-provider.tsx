@@ -2,15 +2,18 @@
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  signOut,
-  onAuthStateChanged,
-  type User,
-} from "firebase/auth"
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import { saveToLocalStorage } from "@/lib/storage"
+import {
+  dummyWeddingDetails,
+  dummyGuests,
+  dummyTasks,
+  dummyBudgetItems,
+  dummyVendors,
+  dummyTimelineEvents,
+  dummyTables,
+} from "@/lib/dummyData"
 
 type AuthContextType = {
   user: User | null
@@ -85,11 +88,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const enableDemoMode = () => {
     setDemoMode(true)
     localStorage.setItem("demoMode", "true")
+    // Populate local storage with dummy data
+    saveToLocalStorage({
+      weddingDetails: dummyWeddingDetails,
+      guests: dummyGuests,
+      tasks: dummyTasks,
+      budgetItems: dummyBudgetItems,
+      vendors: dummyVendors,
+      timelineEvents: dummyTimelineEvents,
+      tables: dummyTables,
+    })
   }
 
   const disableDemoMode = () => {
     setDemoMode(false)
     localStorage.removeItem("demoMode")
+    // Clear dummy data from local storage
+    localStorage.removeItem("weddingPlannerData")
   }
 
   return (

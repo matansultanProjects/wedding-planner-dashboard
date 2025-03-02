@@ -35,17 +35,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
+import { SupportChat } from "./support-chat"
+import { useTranslation } from "@/hooks/useTranslation"
 
 const navItems = [
-  { href: "/dashboard", label: "סקירה כללית", icon: Home },
-  { href: "/wedding-details", label: "פרטי החתונה", icon: Heart },
-  { href: "/guests", label: "רשימת אורחים", icon: Users },
-  { href: "/seating", label: "סידורי הושבה", icon: Users },
-  { href: "/budget", label: "תקציב", icon: DollarSign },
-  { href: "/tasks", label: "משימות", icon: CheckSquare },
-  { href: "/timeline", label: "ציר זמן", icon: Clock },
-  { href: "/vendors", label: "ספקים", icon: Briefcase },
-  { href: "/settings", label: "הגדרות", icon: Settings },
+  { href: "/dashboard", label: "dashboardTitle", icon: Home },
+  { href: "/wedding-details", label: "weddingDetails", icon: Heart },
+  { href: "/guests", label: "guestsPageTitle", icon: Users },
+  { href: "/seating", label: "seatingPageTitle", icon: Users },
+  { href: "/budget", label: "budgetPageTitle", icon: DollarSign },
+  { href: "/tasks", label: "tasksPageTitle", icon: CheckSquare },
+  { href: "/timeline", label: "timelinePageTitle", icon: Clock },
+  { href: "/vendors", label: "vendorsPageTitle", icon: Briefcase },
+  { href: "/settings", label: "settingsPageTitle", icon: Settings },
 ]
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
@@ -54,10 +56,16 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = React.useState(false)
   const { user, signOut, demoMode } = useAuth()
   const router = useRouter()
+  const { t, language, changeLanguage } = useTranslation()
 
   const handleSignOut = async () => {
     await signOut()
     router.push("/login")
+  }
+
+  const toggleLanguage = () => {
+    const newLanguage = language === "he" ? "en" : "he"
+    changeLanguage(newLanguage)
   }
 
   return (
@@ -77,7 +85,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                     <div className="p-6 border-b">
                       <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                         <Calendar className="h-6 w-6 text-primary" />
-                        <span className="text-xl font-bold">wedfull - מתכנן החתונה שלך</span>
+                        <span className="text-xl font-bold">{t("wedfullTitle")}</span>
                       </Link>
                     </div>
                     <nav className="flex flex-col p-6 space-y-6 flex-1">
@@ -94,7 +102,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                             onClick={() => setIsOpen(false)}
                           >
                             <Icon className="h-5 w-5" />
-                            {item.label}
+                            {t(item.label)}
                           </Link>
                         )
                       })}
@@ -114,12 +122,12 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                           </Avatar>
                           <div className="flex flex-col">
                             <span className="text-sm font-medium">
-                              {user ? user.displayName || user.email : "אורח"}
+                              {user ? user.displayName || user.email : t("guest")}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {demoMode && (
                                 <Badge variant="outline" className="text-xs">
-                                  מצב הדגמה
+                                  {t("demoMode")}
                                 </Badge>
                               )}
                             </span>
@@ -135,7 +143,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               </Sheet>
               <Link href="/dashboard" className="flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary hidden md:block" />
-                <span className="text-xl font-bold gradient-text">wedfull - מתכנן החתונה שלך</span>
+                <span className="text-xl font-bold gradient-text">{t("wedfullTitle")}</span>
               </Link>
             </div>
             <div className="flex items-center gap-4">
@@ -153,7 +161,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                       )}
                     >
                       <Icon className="h-4 w-4 mr-2" />
-                      {item.label}
+                      {t(item.label)}
                     </Link>
                   )
                 })}
@@ -165,6 +173,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                 className="rounded-full"
               >
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={toggleLanguage}>
+                {language === "he" ? "EN" : "עב"}
               </Button>
 
               <DropdownMenu>
@@ -182,18 +193,20 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>
-                    {user ? user.displayName || user.email : "אורח"}
+                    {user ? user.displayName || user.email : t("guest")}
                     {demoMode && (
                       <Badge variant="outline" className="mr-2 text-xs">
-                        מצב הדגמה
+                        {t("demoMode")}
                       </Badge>
                     )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings">הגדרות</Link>
+                  <DropdownMenuItem>
+                    <Link href="/settings" className="w-full">
+                      {t("settingsPageTitle")}
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>התנתק</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>{t("signOut")}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -206,13 +219,12 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              <p className="text-sm font-medium">wedfull - מתכנן החתונה שלך</p>
+              <p className="text-sm font-medium">{t("wedfullFooter")}</p>
             </div>
-            <p className="text-center text-sm text-muted-foreground md:text-right">
-              נבנה באהבה עבור היום המיוחד שלכם ❤️
-            </p>
+            <p className="text-center text-sm text-muted-foreground md:text-right">{t("builtWithLove")}</p>
           </div>
         </footer>
+        <SupportChat />
       </div>
     </AuthGuard>
   )

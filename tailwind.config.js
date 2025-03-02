@@ -67,6 +67,18 @@ module.exports = {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        light: {
+          background: "#ffffff",
+          foreground: "#000000",
+          primary: "#3b82f6",
+          secondary: "#f3f4f6",
+        },
+        dark: {
+          background: "#1f2937",
+          foreground: "#ffffff",
+          primary: "#60a5fa",
+          secondary: "#374151",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
