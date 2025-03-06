@@ -324,6 +324,42 @@ export const translations = {
     deleteTable: "מחק שולחן",
     tableName: "שם השולחן",
     tableCapacity: "קיבולת",
+
+    // Sharing functionality
+    shareWedding: "שתף חתונה",
+    shareWeddingDetails: "שתף פרטי חתונה",
+    shareWeddingDescription:
+      "שתף את הקישור הזה עם בן/בת הזוג או מארגני האירוע כדי לאפשר להם לצפות ולערוך את פרטי החתונה",
+    shareWeddingNote: "כל מי שיש לו את הקישור יוכל לצפות ולערוך את פרטי החתונה שלך",
+    linkCopied: "הקישור הועתק",
+    linkCopiedDescription: "הקישור הועתק ללוח",
+    viewingSharedWedding: "צפייה בחתונה משותפת",
+    viewingSharedWeddingDescription: "אתה צופה בחתונה ששותפה איתך",
+    viewingSharedWeddingBanner: "אתה צופה בחתונה ששותפה איתך. כל שינוי שתבצע יישמר ויהיה גלוי למארגני האירוע.",
+    exitSharedView: "חזור לחתונה שלי",
+    loadingSharedWedding: "טוען פרטי חתונה משותפת...",
+    errorLoadingSharedWedding: "שגיאה בטעינת פרטי החתונה המשותפת",
+    backToDashboard: "חזרה ללוח הבקרה",
+
+    // Data synchronization
+    refreshData: "רענן נתונים",
+    dataUpdated: "הנתונים עודכנו",
+    dataUpdatedDescription: "הנתונים עודכנו בהצלחה",
+    photoUpdated: "התמונה עודכנה",
+    photoUpdatedDescription: "תמונת הזוג עודכנה בהצלחה",
+    noPhotoAvailable: "אין תמונה זמינה",
+
+    // Additional translations
+    couplePhoto: "תמונת הזוג",
+    noWeddingDetailsYet: "לא הוזנו פרטי חתונה עדיין",
+    confirmedOf: "מתוך",
+    deposits: "מקדמות",
+    tasksCompleted: "מהמשימות הושלמו",
+    noUpcomingEvents: "אין אירועים קרובים",
+    plannedBudget: "תקציב מתוכנן",
+    upcomingTasks: "המשימות הקרובות שלך",
+    noTasksToDisplay: "אין משימות להצגה",
+    viewAllTasks: "צפה בכל המשימות",
   },
   en: {
     // Navigation & Common
@@ -651,6 +687,43 @@ export const translations = {
     deleteTable: "Delete Table",
     tableName: "Table Name",
     tableCapacity: "Capacity",
+
+    // Sharing functionality
+    shareWedding: "Share Wedding",
+    shareWeddingDetails: "Share Wedding Details",
+    shareWeddingDescription:
+      "Share this link with your partner or event organizers to allow them to view and edit wedding details",
+    shareWeddingNote: "Anyone with this link can view and edit your wedding details",
+    linkCopied: "Link Copied",
+    linkCopiedDescription: "Link has been copied to clipboard",
+    viewingSharedWedding: "Viewing Shared Wedding",
+    viewingSharedWeddingDescription: "You are viewing a wedding that was shared with you",
+    viewingSharedWeddingBanner:
+      "You are viewing a shared wedding. Any changes you make will be saved and visible to the event organizers.",
+    exitSharedView: "Return to My Wedding",
+    loadingSharedWedding: "Loading shared wedding details...",
+    errorLoadingSharedWedding: "Error loading shared wedding details",
+    backToDashboard: "Back to Dashboard",
+
+    // Data synchronization
+    refreshData: "Refresh Data",
+    dataUpdated: "Data Updated",
+    dataUpdatedDescription: "Data has been updated successfully",
+    photoUpdated: "Photo Updated",
+    photoUpdatedDescription: "Couple photo has been updated successfully",
+    noPhotoAvailable: "No photo available",
+
+    // Additional translations
+    couplePhoto: "Couple Photo",
+    noWeddingDetailsYet: "No wedding details entered yet",
+    confirmedOf: "of",
+    deposits: "Deposits",
+    tasksCompleted: "of tasks completed",
+    noUpcomingEvents: "No upcoming events",
+    plannedBudget: "Planned Budget",
+    upcomingTasks: "Your upcoming tasks",
+    noTasksToDisplay: "No tasks to display",
+    viewAllTasks: "View all tasks",
   },
 }
 

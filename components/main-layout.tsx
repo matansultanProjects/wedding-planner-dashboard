@@ -17,6 +17,7 @@ import {
   Settings,
   Heart,
   LogOut,
+  ArrowLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
@@ -37,6 +38,7 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { SupportChat } from "./support-chat"
 import { useTranslation } from "@/hooks/useTranslation"
+import { ShareLink } from "./share-link"
 
 const navItems = [
   { href: "/dashboard", label: "dashboardTitle", icon: Home },
@@ -50,7 +52,12 @@ const navItems = [
   { href: "/settings", label: "settingsPageTitle", icon: Settings },
 ]
 
-export function MainLayout({ children }: { children: React.ReactNode }) {
+interface MainLayoutProps {
+  children: React.ReactNode
+  isSharedView?: boolean
+}
+
+export function MainLayout({ children, isSharedView = false }: MainLayoutProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = React.useState(false)
@@ -66,6 +73,12 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   const toggleLanguage = () => {
     const newLanguage = language === "he" ? "en" : "he"
     changeLanguage(newLanguage)
+  }
+
+  const exitSharedView = () => {
+    localStorage.removeItem("viewingSharedWedding")
+    localStorage.removeItem("sharedWeddingId")
+    router.push("/dashboard")
   }
 
   return (
@@ -147,6 +160,15 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
             <div className="flex items-center gap-4">
+              {isSharedView && (
+                <Button variant="outline" size="sm" onClick={exitSharedView} className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  {t("exitSharedView")}
+                </Button>
+              )}
+
+              {!isSharedView && !demoMode && <ShareLink />}
+
               <nav className="hidden md:flex items-center space-x-1 mr-4">
                 {navItems.map((item) => {
                   const Icon = item.icon

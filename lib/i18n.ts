@@ -3,7 +3,6 @@
 import { useTranslation as useNextTranslation } from "next-i18next"
 import { useRouter } from "next/navigation"
 
-
 export function useTranslation() {
   const { t, i18n } = useNextTranslation()
   const router = useRouter()

@@ -17,10 +17,16 @@ import * as XLSX from "xlsx"
 import { useCustomToast } from "@/components/ui/custom-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "@/hooks/useTranslation"
+import { useAuth } from "./auth-provider"
 
-export function GuestList() {
+interface GuestListProps {
+  isSharedView?: boolean
+}
+
+export function GuestList({ isSharedView = false }: GuestListProps) {
   const customToast = useCustomToast()
+  const { demoMode } = useAuth()
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRelation, setFilterRelation] = useState<string | null>(null)
@@ -28,14 +34,17 @@ export function GuestList() {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [dataUpdated, setDataUpdated] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
     const storedData = getFromLocalStorage()
     setGuests(storedData.guests || [])
-  }, [])
+  }, [dataUpdated])
 
   const handleImportExcel = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (isSharedView) return
+
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
@@ -102,6 +111,8 @@ export function GuestList() {
   })
 
   const handleAddGuest = () => {
+    if (isSharedView) return
+
     if (newGuest.fullName) {
       const guestToAdd: Guest = {
         id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -122,11 +133,15 @@ export function GuestList() {
   }
 
   const handleEditGuest = (guest: Guest) => {
+    if (isSharedView) return
+
     setEditingGuest(guest)
     setIsEditDialogOpen(true)
   }
 
   const handleUpdateGuest = () => {
+    if (isSharedView) return
+
     if (editingGuest) {
       const updatedGuests = guests.map((g) => (g.id === editingGuest.id ? editingGuest : g))
       setGuests(updatedGuests)
@@ -138,11 +153,22 @@ export function GuestList() {
   }
 
   const handleDeleteGuest = (id: string) => {
+    if (isSharedView) return
+
     const guestName = guests.find((g) => g.id === id)?.fullName
     const updatedGuests = guests.filter((guest) => guest.id !== id)
     setGuests(updatedGuests)
     saveToLocalStorage({ guests: updatedGuests })
     customToast.success(t("guestRemoved"), t("guestRemovedDescription", { name: guestName }))
+  }
+
+  const handleUpdateData = () => {
+    if (!isSharedView) return
+
+    // In a real app, this would be an API call to update the data
+    // For now, we'll just refresh the data from localStorage
+    setDataUpdated((prev) => !prev)
+    customToast.success(t("dataUpdated"), t("dataUpdatedDescription"))
   }
 
   // Calculate statistics
@@ -159,6 +185,12 @@ export function GuestList() {
 
   return (
     <div className="space-y-6">
+      {isSharedView && (
+        <div className="flex justify-end mb-4">
+          <Button onClick={handleUpdateData}>{t("refreshData")}</Button>
+        </div>
+      )}
+
       <Card className="shadow-card border-none overflow-hidden">
         <div className="bg-gradient-to-r from-primary/90 to-pink-500/90 text-white">
           <CardHeader>
@@ -223,125 +255,135 @@ export function GuestList() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
-                <Upload className="h-4 w-4 mr-1" />
-                {t("import")}
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept=".xlsx,.xls"
-                  className="hidden"
-                  onChange={handleImportExcel}
-                />
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={handleExportExcel}>
-                <Download className="h-4 w-4 mr-1" />
-                {t("export")}
-              </Button>
-
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <UserPlus className="h-4 w-4 mr-1" />
-                    {t("addGuest")}
+              {!isSharedView && (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
+                    <Upload className="h-4 w-4 mr-1" />
+                    {t("import")}
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                      onChange={handleImportExcel}
+                    />
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
-                  <DialogHeader>
-                    <DialogTitle>{t("addGuestTitle")}</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">
-                        {t("fullName")}
-                      </Label>
-                      <Input
-                        id="name"
-                        value={newGuest.fullName || ""}
-                        onChange={(e) => setNewGuest({ ...newGuest, fullName: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="phone" className="text-right">
-                        {t("phone")}
-                      </Label>
-                      <Input
-                        id="phone"
-                        value={newGuest.phoneNumber || ""}
-                        onChange={(e) => setNewGuest({ ...newGuest, phoneNumber: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="relation" className="text-right">
-                        {t("relation")}
-                      </Label>
-                      <Select
-                        value={newGuest.relation}
-                        onValueChange={(value) => setNewGuest({ ...newGuest, relation: value as Guest["relation"] })}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder={t("selectRelation")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="משפחה">{t("family")}</SelectItem>
-                          <SelectItem value="חברים">{t("friends")}</SelectItem>
-                          <SelectItem value="עבודה">{t("work")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="count" className="text-right">
-                        {t("invitedCount")}
-                      </Label>
-                      <Input
-                        id="count"
-                        type="number"
-                        value={newGuest.invitedCount || ""}
-                        onChange={(e) => setNewGuest({ ...newGuest, invitedCount: Number.parseInt(e.target.value) })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="confirmed" className="text-right">
-                        {t("confirmed")}
-                      </Label>
-                      <Select
-                        value={newGuest.confirmed}
-                        onValueChange={(value) => setNewGuest({ ...newGuest, confirmed: value as Guest["confirmed"] })}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder={t("selectStatus")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="כן">{t("yes")}</SelectItem>
-                          <SelectItem value="לא">{t("no")}</SelectItem>
-                          <SelectItem value="אולי">{t("maybe")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="notes" className="text-right">
-                        {t("notes")}
-                      </Label>
-                      <Input
-                        id="notes"
-                        value={newGuest.specialNotes || ""}
-                        onChange={(e) => setNewGuest({ ...newGuest, specialNotes: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                      {t("cancel")}
-                    </Button>
-                    <Button onClick={handleAddGuest}>{t("addGuest")}</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+
+                  <Button variant="outline" size="sm" onClick={handleExportExcel}>
+                    <Download className="h-4 w-4 mr-1" />
+                    {t("export")}
+                  </Button>
+
+                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        {t("addGuest")}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>{t("addGuestTitle")}</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="name" className="text-right">
+                            {t("fullName")}
+                          </Label>
+                          <Input
+                            id="name"
+                            value={newGuest.fullName || ""}
+                            onChange={(e) => setNewGuest({ ...newGuest, fullName: e.target.value })}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="phone" className="text-right">
+                            {t("phone")}
+                          </Label>
+                          <Input
+                            id="phone"
+                            value={newGuest.phoneNumber || ""}
+                            onChange={(e) => setNewGuest({ ...newGuest, phoneNumber: e.target.value })}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="relation" className="text-right">
+                            {t("relation")}
+                          </Label>
+                          <Select
+                            value={newGuest.relation}
+                            onValueChange={(value) =>
+                              setNewGuest({ ...newGuest, relation: value as Guest["relation"] })
+                            }
+                          >
+                            <SelectTrigger className="col-span-3">
+                              <SelectValue placeholder={t("selectRelation")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="משפחה">{t("family")}</SelectItem>
+                              <SelectItem value="חברים">{t("friends")}</SelectItem>
+                              <SelectItem value="עבודה">{t("work")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="count" className="text-right">
+                            {t("invitedCount")}
+                          </Label>
+                          <Input
+                            id="count"
+                            type="number"
+                            value={newGuest.invitedCount || ""}
+                            onChange={(e) =>
+                              setNewGuest({ ...newGuest, invitedCount: Number.parseInt(e.target.value) })
+                            }
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="confirmed" className="text-right">
+                            {t("confirmed")}
+                          </Label>
+                          <Select
+                            value={newGuest.confirmed}
+                            onValueChange={(value) =>
+                              setNewGuest({ ...newGuest, confirmed: value as Guest["confirmed"] })
+                            }
+                          >
+                            <SelectTrigger className="col-span-3">
+                              <SelectValue placeholder={t("selectStatus")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="כן">{t("yes")}</SelectItem>
+                              <SelectItem value="לא">{t("no")}</SelectItem>
+                              <SelectItem value="אולי">{t("maybe")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="notes" className="text-right">
+                            {t("notes")}
+                          </Label>
+                          <Input
+                            id="notes"
+                            value={newGuest.specialNotes || ""}
+                            onChange={(e) => setNewGuest({ ...newGuest, specialNotes: e.target.value })}
+                            className="col-span-3"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                          {t("cancel")}
+                        </Button>
+                        <Button onClick={handleAddGuest}>{t("addGuest")}</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              )}
             </div>
           </div>
 
@@ -377,7 +419,7 @@ export function GuestList() {
                     <TableHead>{t("count")}</TableHead>
                     <TableHead>{t("confirmed")}</TableHead>
                     <TableHead>{t("notes")}</TableHead>
-                    <TableHead>{t("actions")}</TableHead>
+                    {!isSharedView && <TableHead>{t("actions")}</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -398,21 +440,23 @@ export function GuestList() {
                           </Badge>
                         </TableCell>
                         <TableCell className="max-w-[200px] truncate">{guest.specialNotes}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditGuest(guest)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteGuest(guest.id)}>
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        {!isSharedView && (
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => handleEditGuest(guest)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteGuest(guest.id)}>
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                      <TableCell colSpan={isSharedView ? 6 : 7} className="text-center py-6 text-muted-foreground">
                         {t("noGuestsFound")}
                       </TableCell>
                     </TableRow>
@@ -457,16 +501,18 @@ export function GuestList() {
                           </div>
                         )}
                       </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" size="sm" onClick={() => handleEditGuest(guest)}>
-                          <Edit className="h-3 w-3 mr-1" />
-                          {t("edit")}
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteGuest(guest.id)}>
-                          <Trash className="h-3 w-3 mr-1" />
-                          {t("remove")}
-                        </Button>
-                      </div>
+                      {!isSharedView && (
+                        <div className="flex justify-end gap-2 mt-4">
+                          <Button variant="outline" size="sm" onClick={() => handleEditGuest(guest)}>
+                            <Edit className="h-3 w-3 mr-1" />
+                            {t("edit")}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDeleteGuest(guest.id)}>
+                            <Trash className="h-3 w-3 mr-1" />
+                            {t("remove")}
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -484,7 +530,7 @@ export function GuestList() {
             {t("total")}: {filteredGuests.length} {t("guests")} (
             {filteredGuests.reduce((sum, guest) => sum + guest.invitedCount, 0)} {t("invited")})
           </div>
-          {guests.length > 0 && (
+          {guests.length > 0 && !isSharedView && (
             <Button variant="outline" size="sm" onClick={handleExportExcel}>
               <Download className="h-4 w-4 mr-1" />
               {t("exportToExcel")}
