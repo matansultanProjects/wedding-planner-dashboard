@@ -7,53 +7,59 @@ import { Overview } from "@/components/overview"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { useCustomToast } from "@/components/ui/custom-toast"
-import { useTranslation } from "@/hooks/useTranslation"
+import { doc, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 export default function SharedWeddingPage() {
   const params = useParams()
   const router = useRouter()
-  const { t } = useTranslation()
-  const { demoMode } = useAuth()
+  const { demoMode, checkSharedAccess, setSharedWeddingId } = useAuth()
   const customToast = useCustomToast()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [weddingData, setWeddingData] = useState<any>(null)
 
   const sharedId = params.id as string
 
   useEffect(() => {
     if (demoMode) {
-      // Redirect to dashboard if in demo mode
       router.push("/dashboard")
       return
     }
 
-    // In a real app, this would be an API call to fetch the shared wedding data
-    // For now, we'll simulate this with localStorage
-    try {
-      // This is a simplified version. In a real app, you would fetch data from a server
-      // based on the shared ID
-
-      // For now, we'll just set a flag in localStorage to indicate we're viewing shared data
-      localStorage.setItem("viewingSharedWedding", "true")
-      localStorage.setItem("sharedWeddingId", sharedId)
-
-      // In a real implementation, you would fetch the wedding data from a server
-      // For now, we'll just use what's in localStorage
-
-      setLoading(false)
-      customToast.info(t("viewingSharedWedding"), t("viewingSharedWeddingDescription"))
-    } catch (err) {
-      console.error("Error loading shared wedding:", err)
-      setError(t("errorLoadingSharedWedding"))
-      setLoading(false)
+    const fetchSharedWedding = async () => {
+      try {
+        const weddingId = await checkSharedAccess(sharedId)
+        if (weddingId) {
+          setSharedWeddingId(weddingId)
+          const weddingDoc = await getDoc(doc(db, "weddings", weddingId))
+          if (weddingDoc.exists()) {
+            setWeddingData(weddingDoc.data())
+            setLoading(false)
+            customToast.info("צפייה בחתונה משותפת", "אתה צופה בחתונה ששותפה איתך")
+          } else {
+            setError("החתונה לא נמצאה")
+            setLoading(false)
+          }
+        } else {
+          setError("קישור השיתוף אינו תקין")
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error("Error loading shared wedding:", err)
+        setError("שגיאה בטעינת החתונה המשותפת")
+        setLoading(false)
+      }
     }
-  }, [demoMode, router, sharedId, customToast, t])
+
+    fetchSharedWedding()
+  }, [demoMode, router, sharedId, checkSharedAccess, setSharedWeddingId, customToast])
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-        <p className="text-lg font-medium">{t("loadingSharedWedding")}</p>
+        <p className="text-lg font-medium">טוען חתונה משותפת...</p>
       </div>
     )
   }
@@ -62,8 +68,8 @@ export default function SharedWeddingPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="text-lg font-medium text-destructive">{error}</p>
-        <button onClick={() => router.push("/dashboard")} className="mt-4 px-4 py-2 bg-primary text-white rounded-md">
-          {t("backToDashboard")}
+        <button onClick={() => router.push("/")} className="mt-4 px-4 py-2 bg-primary text-white rounded-md">
+          חזרה לדף הבית
         </button>
       </div>
     )
@@ -72,9 +78,11 @@ export default function SharedWeddingPage() {
   return (
     <MainLayout isSharedView={true}>
       <div className="bg-secondary/30 p-4 rounded-lg mb-6">
-        <p className="text-center text-sm font-medium">{t("viewingSharedWeddingBanner")}</p>
+        <p className="text-center text-sm font-medium">
+          אתה צופה בחתונה ששותפה איתך. כל שינוי שתבצע יישמר ויהיה גלוי למארגני האירוע.
+        </p>
       </div>
-      <Overview isSharedView={true} />
+      <Overview isSharedView={true} weddingData={weddingData} />
     </MainLayout>
   )
 }

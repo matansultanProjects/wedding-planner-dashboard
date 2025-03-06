@@ -11,12 +11,12 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
 import type { Guest } from "@/lib/types"
-import { getFromLocalStorage, saveToLocalStorage } from "@/lib/storage"
 import { Plus, Minus, Users, Trash, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "./auth-provider"
 import { useCustomToast } from "./ui/custom-toast"
 import { useTranslation } from "@/hooks/useTranslation"
+import { SaveDataButton } from "./save-data-button"
 
 interface Table {
   id: string
@@ -196,7 +196,7 @@ const UnassignedGuests = ({ guests, onAddGuest }) => {
 }
 
 export function SeatingArrangement({ isSharedView = false }: SeatingArrangementProps) {
-  const { demoMode } = useAuth()
+  const { user, demoMode, weddingData } = useAuth()
   const { t } = useTranslation()
   const customToast = useCustomToast()
   const [guests, setGuests] = useState<Guest[]>([])
@@ -206,10 +206,13 @@ export function SeatingArrangement({ isSharedView = false }: SeatingArrangementP
   const [dataUpdated, setDataUpdated] = useState(false)
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    setGuests(storedData.guests || [])
-    setTables(storedData.tables || [])
-  }, [dataUpdated])
+    if (weddingData?.guests) {
+      setGuests(weddingData.guests)
+    }
+    if (weddingData?.tables) {
+      setTables(weddingData.tables)
+    }
+  }, [weddingData])
 
   const addTable = () => {
     if (isSharedView || demoMode) return
@@ -223,7 +226,7 @@ export function SeatingArrangement({ isSharedView = false }: SeatingArrangementP
       }
       const updatedTables = [...tables, newTable]
       setTables(updatedTables)
-      saveToLocalStorage({ tables: updatedTables })
+      //saveToLocalStorage({ tables: updatedTables })
       setNewTableName("")
       setNewTableSeats(8)
       toast({
@@ -240,7 +243,7 @@ export function SeatingArrangement({ isSharedView = false }: SeatingArrangementP
     if (table) {
       const updatedTables = tables.filter((t) => t.id !== tableId)
       setTables(updatedTables)
-      saveToLocalStorage({ tables: updatedTables })
+      //saveToLocalStorage({ tables: updatedTables })
       toast({
         title: t("tableRemoved"),
         description: t("tableRemovedDescription", { name: table.name }),
@@ -290,7 +293,7 @@ export function SeatingArrangement({ isSharedView = false }: SeatingArrangementP
     })
 
     setTables(updatedTables)
-    saveToLocalStorage({ tables: updatedTables })
+    //saveToLocalStorage({ tables: updatedTables })
   }
 
   const removeGuestFromTable = (guestId: string, tableId: string) => {
@@ -306,7 +309,7 @@ export function SeatingArrangement({ isSharedView = false }: SeatingArrangementP
         return t
       })
       setTables(updatedTables)
-      saveToLocalStorage({ tables: updatedTables })
+      //saveToLocalStorage({ tables: updatedTables })
       toast({
         title: t("guestRemoved"),
         description: t("guestRemovedDescription", { name: guest.fullName, table: table.name }),
@@ -424,6 +427,7 @@ export function SeatingArrangement({ isSharedView = false }: SeatingArrangementP
             <UnassignedGuests guests={unassignedGuests} onAddGuest={assignGuestToTable} />
           </CardContent>
         </Card>
+        <SaveDataButton data={{ guests, tables }} collectionName="weddings" documentId={user?.uid || ""} />
       </div>
     </DndProvider>
   )

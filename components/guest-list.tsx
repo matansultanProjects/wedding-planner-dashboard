@@ -1,15 +1,17 @@
 "use client"
 
+import { CardFooter } from "@/components/ui/card"
+
 import type React from "react"
+
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Search, UserPlus, Download, Upload, Edit, Trash, Filter } from "lucide-react"
 import type { Guest } from "@/lib/types"
-import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,7 +20,10 @@ import { useCustomToast } from "@/components/ui/custom-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useTranslation } from "@/hooks/useTranslation"
-import { useAuth } from "./auth-provider"
+import { useAuth } from "@/components/auth-provider"
+import { SaveDataButton } from "./save-data-button"
+import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 interface GuestListProps {
   isSharedView?: boolean
@@ -26,7 +31,7 @@ interface GuestListProps {
 
 export function GuestList({ isSharedView = false }: GuestListProps) {
   const customToast = useCustomToast()
-  const { demoMode } = useAuth()
+  const { user, demoMode, weddingData } = useAuth()
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRelation, setFilterRelation] = useState<string | null>(null)
@@ -34,13 +39,13 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [dataUpdated, setDataUpdated] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    setGuests(storedData.guests || [])
-  }, [dataUpdated])
+    if (weddingData?.guests) {
+      setGuests(weddingData.guests)
+    }
+  }, [weddingData])
 
   const handleImportExcel = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (isSharedView) return
@@ -79,7 +84,7 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
         })
 
         setGuests(updatedGuests)
-        saveToLocalStorage({ guests: updatedGuests })
+        //saveToLocalStorage({ guests: updatedGuests })
 
         customToast.success(t("importSuccess"), t("importSuccessDescription", { count: newGuests.length }))
       }
@@ -110,12 +115,12 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
     return matchesSearch && matchesFilter
   })
 
-  const handleAddGuest = () => {
-    if (isSharedView) return
+  const handleAddGuest = async () => {
+    if (isSharedView || demoMode) return
 
     if (newGuest.fullName) {
       const guestToAdd: Guest = {
-        id: `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: "",
         fullName: newGuest.fullName,
         phoneNumber: newGuest.phoneNumber || "",
         relation: (newGuest.relation as Guest["relation"]) || t("friends"),
@@ -123,43 +128,54 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
         confirmed: (newGuest.confirmed as Guest["confirmed"]) || t("maybe"),
         specialNotes: newGuest.specialNotes || "",
       }
-      const updatedGuests = [...guests, guestToAdd]
-      setGuests(updatedGuests)
-      saveToLocalStorage({ guests: updatedGuests })
-      setNewGuest({})
-      setIsAddDialogOpen(false)
-      customToast.success(t("guestAdded"), t("guestAddedDescription", { name: guestToAdd.fullName }))
+
+      try {
+        const docRef = await addDoc(collection(db, "weddings", user!.uid, "guests"), guestToAdd)
+        guestToAdd.id = docRef.id
+        setNewGuest({})
+        setIsAddDialogOpen(false)
+        customToast.success(t("guestAdded"), t("guestAddedDescription", { name: guestToAdd.fullName }))
+      } catch (error) {
+        console.error("Error adding guest:", error)
+        customToast.error(t("errorAddingGuest"), t("errorAddingGuestDescription"))
+      }
     }
   }
 
   const handleEditGuest = (guest: Guest) => {
-    if (isSharedView) return
+    if (isSharedView || demoMode) return
 
     setEditingGuest(guest)
     setIsEditDialogOpen(true)
   }
 
-  const handleUpdateGuest = () => {
-    if (isSharedView) return
+  const handleUpdateGuest = async () => {
+    if (isSharedView || demoMode) return
 
     if (editingGuest) {
-      const updatedGuests = guests.map((g) => (g.id === editingGuest.id ? editingGuest : g))
-      setGuests(updatedGuests)
-      saveToLocalStorage({ guests: updatedGuests })
-      setEditingGuest(null)
-      setIsEditDialogOpen(false)
-      customToast.success(t("guestUpdated"), t("guestUpdatedDescription"))
+      try {
+        await updateDoc(doc(db, "weddings", user!.uid, "guests", editingGuest.id), editingGuest)
+        setEditingGuest(null)
+        setIsEditDialogOpen(false)
+        customToast.success(t("guestUpdated"), t("guestUpdatedDescription"))
+      } catch (error) {
+        console.error("Error updating guest:", error)
+        customToast.error(t("errorUpdatingGuest"), t("errorUpdatingGuestDescription"))
+      }
     }
   }
 
-  const handleDeleteGuest = (id: string) => {
-    if (isSharedView) return
+  const handleDeleteGuest = async (id: string) => {
+    if (isSharedView || demoMode) return
 
     const guestName = guests.find((g) => g.id === id)?.fullName
-    const updatedGuests = guests.filter((guest) => guest.id !== id)
-    setGuests(updatedGuests)
-    saveToLocalStorage({ guests: updatedGuests })
-    customToast.success(t("guestRemoved"), t("guestRemovedDescription", { name: guestName }))
+    try {
+      await deleteDoc(doc(db, "weddings", user!.uid, "guests", id))
+      customToast.success(t("guestRemoved"), t("guestRemovedDescription", { name: guestName }))
+    } catch (error) {
+      console.error("Error deleting guest:", error)
+      customToast.error(t("errorDeletingGuest"), t("errorDeletingGuestDescription"))
+    }
   }
 
   const handleUpdateData = () => {
@@ -167,7 +183,7 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
 
     // In a real app, this would be an API call to update the data
     // For now, we'll just refresh the data from localStorage
-    setDataUpdated((prev) => !prev)
+    //fetchGuests()
     customToast.success(t("dataUpdated"), t("dataUpdatedDescription"))
   }
 
@@ -639,6 +655,7 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <SaveDataButton data={guests} collectionName="weddings" documentId={user?.uid || ""} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 export const translations = {
   he: {
-    // Navigation & Common
+    // ניווט וכללי
     wedfullTitle: "wedfull - מתכנן החתונה שלך",
     wedfullFooter: "wedfull - מתכנן החתונה שלך",
     builtWithLove: "נבנה באהבה עבור היום המיוחד שלכם ❤️",
@@ -15,15 +15,15 @@ export const translations = {
     settings: "הגדרות",
     overview: "סקירה כללית",
 
-    // Auth & User
+    // אימות ומשתמש
     login: "התחברות",
-    signOut: "התנתק",
+    signOut: "התנתקות",
     guest: "אורח",
     demoMode: "מצב הדגמה",
     signInWithGoogle: "התחבר עם Google",
     loggedInAs: "מחובר כ: {{email}}",
 
-    // Landing Page
+    // עמוד נחיתה
     landingPageTitle: "תכנון החתונה שלכם פשוט יותר מתמיד",
     landingPageDescription: "פלטפורמה חכמה לניהול כל פרטי החתונה במקום אחד, מותאמת במיוחד לזוגות ישראלים",
     startFree: "התחל עכשיו בחינם",
@@ -40,7 +40,7 @@ export const translations = {
     helpAndSupport: "עזרה ותמיכה",
     allRightsReserved: "כל הזכויות שמורות",
 
-    // Features
+    // תכונות
     guestManagement: "ניהול אורחים",
     guestManagementDescription: "נהל את רשימת האורחים, אישורי הגעה ומעקב אחר הזמנות",
     budgetManagement: "ניהול תקציב",
@@ -50,7 +50,7 @@ export const translations = {
     taskManagement: "ניהול משימות",
     taskManagementDescription: "עקוב אחר משימות ותזכורות לקראת היום הגדול",
 
-    // Benefits
+    // יתרונות
     userFriendlyInterface: "ממשק ידידותי למשתמש שקל להתמצא בו",
     accessibleFromAnywhere: "גישה מכל מקום ומכל מכשיר",
     readyMadeTemplates: "תבניות מוכנות לשימוש",
@@ -59,7 +59,7 @@ export const translations = {
     supportInHebrew: "תמיכה מלאה בעברית",
     advancedSecurity: "אבטחה מתקדמת לשמירה על המידע שלכם",
 
-    // How it works
+    // איך זה עובד
     easyRegistration: "הרשמה פשוטה",
     easyRegistrationDescription: "הירשמו בקלות והתחילו להזין את פרטי החתונה הבסיסיים",
     startPlanningNow: "תכנון מיידי",
@@ -67,7 +67,7 @@ export const translations = {
     celebrateBig: "חגגו בגדול",
     celebrateBigDescription: "תיהנו מהיום המיוחד שלכם כשהכל מאורגן ומסודר",
 
-    // Login Page
+    // עמוד התחברות
     loginTitle: "wedfull - מתכנן החתונה שלך",
     loginSubtitle: "התחבר כדי להתחיל לתכנן את היום המיוחד שלך",
     loginError: "שגיאת התחברות",
@@ -79,7 +79,7 @@ export const translations = {
     termsAgreement: "אני מסכים/ה לתנאי השימוש ומדיניות הפרטיות של wedfull",
     termsAndPrivacy: "תנאי השימוש ומדיניות הפרטיות",
 
-    // Onboarding
+    // תהליך ההרשמה
     welcome: "ברוכים הבאים!",
     letsGetStarted: "בואו נתחיל בהכרות קצרה",
     basicDetails: "פרטים בסיסיים",
@@ -97,7 +97,7 @@ export const translations = {
     previous: "הקודם",
     finish: "סיום",
 
-    // Dashboard/Overview
+    // לוח בקרה/סקירה כללית
     overviewTitle: "סקירה כללית",
     totalGuests: "סך הכל אורחים",
     confirmedGuests: "אישרו הגעה",
@@ -115,7 +115,7 @@ export const translations = {
     daysLeft: "ימים נותרו",
     addPhoto: "הוסף תמונה",
 
-    // Guest List
+    // רשימת אורחים
     guestsTitle: "רשימת אורחים",
     manageGuestList: "נהל את רשימת המוזמנים שלך",
     addGuest: "הוסף אורח",
@@ -147,7 +147,7 @@ export const translations = {
     cancel: "ביטול",
     specialNotes: "הערות מיוחדות",
 
-    // Budget
+    // תקציב
     budgetTitle: "תקציב החתונה",
     expenseTracking: "מעקב אחר הוצאות והתקדמות",
     addExpense: "הוסף הוצאה",
@@ -164,7 +164,7 @@ export const translations = {
     music: "מוזיקה",
     other: "אחר",
 
-    // Seating Arrangement
+    // סידורי הושבה
     seatingTitle: "סידורי הושבה",
     unassignedGuests: "אורחים לא משובצים",
     addTable: "הוסף שולחן",
@@ -178,7 +178,7 @@ export const translations = {
     notEnoughSpace: "אין מספיק מקום בשולחן",
     guestRemoved: "הסרת שיבוץ",
 
-    // Tasks
+    // משימות
     tasksTitle: "ניהול משימות",
     taskTracking: "עקוב אחר המשימות לקראת החתונה",
     taskTitle: "כותרת המשימה",
@@ -190,7 +190,7 @@ export const translations = {
     taskUncompleted: "משימה לא הושלמה",
     taskDeleted: "משימה נמחקה",
 
-    // Timeline
+    // ציר זמן
     timelineTitle: "ציר זמן",
     milestonesAndEvents: "אבני דרך ואירועים חשובים",
     addEvent: "הוסף אירוע",
@@ -203,7 +203,7 @@ export const translations = {
     warning: "אזהרה",
     eventAdded: "אירוע נוסף",
 
-    // Vendors
+    // ספקים
     vendorsTitle: "ספקים",
     manageWeddingVendors: "ניהול ספקי החתונה",
     addVendor: "הוסף ספק",
@@ -223,7 +223,7 @@ export const translations = {
     editVendor: "ערוך ספק",
     saveChanges: "שמור שינויים",
 
-    // Wedding Details Form
+    // טופס פרטי חתונה
     weddingDetailsTitle: "פרטי החתונה",
     basicWeddingInfo: "הזן את הפרטים הבסיסיים של החתונה שלך",
     weddingDate: "תאריך החתונה",
@@ -236,7 +236,7 @@ export const translations = {
     detailsSaved: "פרטי החתונה נשמרו",
     detailsUpdated: "הפרטים עודכנו בהצלחה",
 
-    // Settings
+    // הגדרות
     settingsTitle: "הגדרות",
     account: "חשבון",
     manageAccountSettings: "ניהול הגדרות חשבון",
@@ -273,7 +273,7 @@ export const translations = {
     authError: "שגיאת אימות",
     authErrorDescription: "אירעה שגיאה בתהליך האימות",
 
-    // Support Chat
+    // צ'אט תמיכה
     supportChat: "תמיכת wedfull",
     online: "מקוון",
     typeMessage: "הקלד הודעה...",
@@ -284,48 +284,29 @@ export const translations = {
     howToManageBudget: "איך מנהלים את התקציב?",
     howToCreateSeating: "איך יוצרים סידורי הושבה?",
 
-    // Terms Page
+    // עמוד תנאים
     termsTitle: "תנאי שימוש ומדיניות פרטיות",
     termsDescription: "אנא קראו בעיון את תנאי השימוש ומדיניות הפרטיות של wedfull",
     backToLogin: "חזרה לדף ההתחברות",
-    welcomeMessage: "ברוכים הבאים ל-Wedfull",
-    dashboardTitle: "לוח בקרה",
-    guestsPageTitle: "ניהול אורחים",
-    budgetPageTitle: "ניהול תקציב",
-    tasksPageTitle: "ניהול משימות",
-    timelinePageTitle: "ציר זמן",
-    vendorsPageTitle: "ניהול ספקים",
-    seatingPageTitle: "סידורי הושבה",
-    settingsPageTitle: "הגדרות",
-    addGuest: "הוסף אורח",
-    editGuest: "ערוך אורח",
-    deleteGuest: "מחק אורח",
-    guestName: "שם האורח",
-    guestPhone: "טלפון",
-    guestEmail: "אימייל",
-    addBudgetItem: "הוסף פריט תקציב",
-    editBudgetItem: "ערוך פריט תקציב",
-    deleteBudgetItem: "מחק פריט תקציב",
-    budgetItemName: "שם הפריט",
-    budgetItemCost: "עלות",
-    addTask: "הוסף משימה",
-    editTask: "ערוך משימה",
-    deleteTask: "מחק משימה",
-    taskName: "שם המשימה",
-    taskDueDate: "תאריך יעד",
-    addVendor: "הוסף ספק",
-    editVendor: "ערוך ספק",
-    deleteVendor: "מחק ספק",
-    vendorName: "שם הספק",
-    vendorPhone: "טלפון",
-    vendorEmail: "אימייל",
-    addTable: "הוסף שולחן",
-    editTable: "ערוך שולחן",
-    deleteTable: "מחק שולחן",
-    tableName: "שם השולחן",
-    tableCapacity: "קיבולת",
 
-    // Sharing functionality
+    // כפתורים ופעולות
+    save: "שמור",
+    edit: "ערוך",
+    delete: "מחק",
+    add: "הוסף",
+    update: "עדכן",
+    cancel: "ביטול",
+    confirm: "אישור",
+
+    // הודעות מערכת
+    dataSaved: "הנתונים נשמרו",
+    dataSavedDescription: "הנתונים נשמרו בהצלחה",
+    dataUpdated: "הנתונים עודכנו",
+    dataUpdatedDescription: "הנתונים עודכנו בהצלחה",
+    errorSavingData: "שגיאה בשמירת הנתונים",
+    errorSavingDataDescription: "אירעה שגיאה בעת שמירת הנתונים. אנא נסה שוב.",
+
+    // שיתוף
     shareWedding: "שתף חתונה",
     shareWeddingDetails: "שתף פרטי חתונה",
     shareWeddingDescription:
@@ -333,33 +314,33 @@ export const translations = {
     shareWeddingNote: "כל מי שיש לו את הקישור יוכל לצפות ולערוך את פרטי החתונה שלך",
     linkCopied: "הקישור הועתק",
     linkCopiedDescription: "הקישור הועתק ללוח",
+
+    // מצב צפייה משותפת
     viewingSharedWedding: "צפייה בחתונה משותפת",
     viewingSharedWeddingDescription: "אתה צופה בחתונה ששותפה איתך",
     viewingSharedWeddingBanner: "אתה צופה בחתונה ששותפה איתך. כל שינוי שתבצע יישמר ויהיה גלוי למארגני האירוע.",
     exitSharedView: "חזור לחתונה שלי",
-    loadingSharedWedding: "טוען פרטי חתונה משותפת...",
-    errorLoadingSharedWedding: "שגיאה בטעינת פרטי החתונה המשותפת",
+    weddingNotFound: "החתונה לא נמצאה",
+    invalidShareLink: "קישור השיתוף אינו תקין",
+    errorLoadingSharedWedding: "שגיאה בטעינת החתונה המשותפת",
+    loadingSharedWedding: "טוען חתונה משותפת...",
+    backToHome: "חזרה לדף הבית",
+
+    // טעינה ושגיאות
+    loading: "טוען...",
     backToDashboard: "חזרה ללוח הבקרה",
 
-    // Data synchronization
+    // כללי
+    total: "סך הכל",
+    guests: "אורחים",
+    invited: "מוזמנים",
     refreshData: "רענן נתונים",
-    dataUpdated: "הנתונים עודכנו",
-    dataUpdatedDescription: "הנתונים עודכנו בהצלחה",
-    photoUpdated: "התמונה עודכנה",
-    photoUpdatedDescription: "תמונת הזוג עודכנה בהצלחה",
-    noPhotoAvailable: "אין תמונה זמינה",
-
-    // Additional translations
-    couplePhoto: "תמונת הזוג",
-    noWeddingDetailsYet: "לא הוזנו פרטי חתונה עדיין",
-    confirmedOf: "מתוך",
-    deposits: "מקדמות",
-    tasksCompleted: "מהמשימות הושלמו",
-    noUpcomingEvents: "אין אירועים קרובים",
-    plannedBudget: "תקציב מתוכנן",
-    upcomingTasks: "המשימות הקרובות שלך",
-    noTasksToDisplay: "אין משימות להצגה",
-    viewAllTasks: "צפה בכל המשימות",
+    saving: "שומר...",
+    saveData: "שמור נתונים",
+    demoModeWarning: "אזהרת מצב הדגמה",
+    demoModeWarningDescription: "לא ניתן לשמור שינויים במצב הדגמה",
+    notAuthenticated: "לא מחובר",
+    pleaseLoginToSave: "אנא התחבר כדי לשמור שינויים",
   },
   en: {
     // Navigation & Common
@@ -503,7 +484,7 @@ export const translations = {
     noGuestsFound: "No guests found",
     table: "Table",
     cards: "Cards",
-    totalInvited: "Total: {{count}} guests ({{total}} invitees)",
+    totalInvited: "Total: {{count}} guests ({{total}} invited)",
     exportToExcel: "Export to Excel",
     editGuest: "Edit Guest",
     updateGuest: "Update Guest",
@@ -651,44 +632,25 @@ export const translations = {
     termsTitle: "Terms of Use and Privacy Policy",
     termsDescription: "Please read wedfull's Terms of Use and Privacy Policy carefully",
     backToLogin: "Back to Login Page",
-    welcomeMessage: "Welcome to Wedfull",
-    dashboardTitle: "Dashboard",
-    guestsPageTitle: "Guest Management",
-    budgetPageTitle: "Budget Management",
-    tasksPageTitle: "Task Management",
-    timelinePageTitle: "Timeline",
-    vendorsPageTitle: "Vendor Management",
-    seatingPageTitle: "Seating Arrangements",
-    settingsPageTitle: "Settings",
-    addGuest: "Add Guest",
-    editGuest: "Edit Guest",
-    deleteGuest: "Delete Guest",
-    guestName: "Guest Name",
-    guestPhone: "Phone",
-    guestEmail: "Email",
-    addBudgetItem: "Add Budget Item",
-    editBudgetItem: "Edit Budget Item",
-    deleteBudgetItem: "Delete Budget Item",
-    budgetItemName: "Item Name",
-    budgetItemCost: "Cost",
-    addTask: "Add Task",
-    editTask: "Edit Task",
-    deleteTask: "Delete Task",
-    taskName: "Task Name",
-    taskDueDate: "Due Date",
-    addVendor: "Add Vendor",
-    editVendor: "Edit Vendor",
-    deleteVendor: "Delete Vendor",
-    vendorName: "Vendor Name",
-    vendorPhone: "Phone",
-    vendorEmail: "Email",
-    addTable: "Add Table",
-    editTable: "Edit Table",
-    deleteTable: "Delete Table",
-    tableName: "Table Name",
-    tableCapacity: "Capacity",
 
-    // Sharing functionality
+    // Buttons and Actions
+    save: "Save",
+    edit: "Edit",
+    delete: "Delete",
+    add: "Add",
+    update: "Update",
+    cancel: "Cancel",
+    confirm: "Confirm",
+
+    // System Messages
+    dataSaved: "Data Saved",
+    dataSavedDescription: "Data has been saved successfully",
+    dataUpdated: "Data Updated",
+    dataUpdatedDescription: "Data has been updated successfully",
+    errorSavingData: "Error Saving Data",
+    errorSavingDataDescription: "An error occurred while saving data. Please try again.",
+
+    // Sharing
     shareWedding: "Share Wedding",
     shareWeddingDetails: "Share Wedding Details",
     shareWeddingDescription:
@@ -696,34 +658,34 @@ export const translations = {
     shareWeddingNote: "Anyone with this link can view and edit your wedding details",
     linkCopied: "Link Copied",
     linkCopiedDescription: "Link has been copied to clipboard",
+
+    // Shared View Mode
     viewingSharedWedding: "Viewing Shared Wedding",
     viewingSharedWeddingDescription: "You are viewing a wedding that was shared with you",
     viewingSharedWeddingBanner:
       "You are viewing a shared wedding. Any changes you make will be saved and visible to the event organizers.",
     exitSharedView: "Return to My Wedding",
-    loadingSharedWedding: "Loading shared wedding details...",
+    weddingNotFound: "Wedding Not Found",
+    invalidShareLink: "Invalid Share Link",
     errorLoadingSharedWedding: "Error loading shared wedding details",
+    loadingSharedWedding: "Loading shared wedding details...",
+    backToHome: "Back to Home",
+
+    // Loading and Errors
+    loading: "Loading...",
     backToDashboard: "Back to Dashboard",
 
-    // Data synchronization
+    // General
+    total: "Total",
+    guests: "Guests",
+    invited: "Invited",
     refreshData: "Refresh Data",
-    dataUpdated: "Data Updated",
-    dataUpdatedDescription: "Data has been updated successfully",
-    photoUpdated: "Photo Updated",
-    photoUpdatedDescription: "Couple photo has been updated successfully",
-    noPhotoAvailable: "No photo available",
-
-    // Additional translations
-    couplePhoto: "Couple Photo",
-    noWeddingDetailsYet: "No wedding details entered yet",
-    confirmedOf: "of",
-    deposits: "Deposits",
-    tasksCompleted: "of tasks completed",
-    noUpcomingEvents: "No upcoming events",
-    plannedBudget: "Planned Budget",
-    upcomingTasks: "Your upcoming tasks",
-    noTasksToDisplay: "No tasks to display",
-    viewAllTasks: "View all tasks",
+    saving: "Saving...",
+    saveData: "Save Data",
+    demoModeWarning: "Demo Mode Warning",
+    demoModeWarningDescription: "Changes cannot be saved in demo mode",
+    notAuthenticated: "Not Authenticated",
+    pleaseLoginToSave: "Please log in to save changes",
   },
 }
 

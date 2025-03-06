@@ -8,6 +8,8 @@ import { Share2, Copy, Check } from "lucide-react"
 import { useAuth } from "./auth-provider"
 import { useCustomToast } from "./ui/custom-toast"
 import { useTranslation } from "@/hooks/useTranslation"
+import { doc, setDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 export function ShareLink() {
   const { demoMode, user } = useAuth()
@@ -15,22 +17,29 @@ export function ShareLink() {
   const customToast = useCustomToast()
   const [copied, setCopied] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
 
-  // Generate a unique sharing ID based on user email or a random ID
-  const getSharingId = () => {
-    if (user?.email) {
-      // Create a hash from the user's email
-      return btoa(user.email)
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .substring(0, 12)
-    } else {
-      // If no user, generate a random ID (this shouldn't happen in non-demo mode)
-      return `share-${Math.random().toString(36).substring(2, 15)}`
+  const generateShareLink = async () => {
+    if (!user) return
+
+    const sharingId = btoa(user.email || "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .substring(0, 12)
+    const shareUrl = `${window.location.origin}/shared/${sharingId}`
+    setShareUrl(shareUrl)
+
+    // Save the sharing information to Firestore
+    try {
+      await setDoc(doc(db, "weddingShares", sharingId), {
+        weddingId: user.uid,
+        createdAt: new Date(),
+        createdBy: user.uid,
+      })
+    } catch (error) {
+      console.error("Error creating share link:", error)
+      customToast.error(t("errorCreatingShareLink"), t("errorCreatingShareLinkDescription"))
     }
   }
-
-  const sharingId = getSharingId()
-  const shareUrl = `${window.location.origin}/shared/${sharingId}`
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl)
@@ -49,7 +58,7 @@ export function ShareLink() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" onClick={generateShareLink}>
           <Share2 className="h-4 w-4" />
           {t("shareWedding")}
         </Button>

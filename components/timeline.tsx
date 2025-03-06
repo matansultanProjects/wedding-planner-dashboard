@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/components/auth-provider"
+import { SaveDataButton } from "@/components/save-data-button"
 
 interface TimelineEvent {
   id: string
@@ -22,15 +23,15 @@ interface TimelineEvent {
 
 export function Timeline() {
   const { toast } = useToast()
+  const { user, demoMode, weddingData } = useAuth()
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [newEvent, setNewEvent] = useState<Partial<TimelineEvent>>({})
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    if (storedData.timelineEvents) {
-      setEvents(storedData.timelineEvents)
+    if (weddingData?.timelineEvents) {
+      setEvents(weddingData.timelineEvents)
     }
-  }, [])
+  }, [weddingData])
 
   const handleAddEvent = () => {
     if (newEvent.date && newEvent.title && newEvent.description && newEvent.status) {
@@ -43,7 +44,7 @@ export function Timeline() {
       }
       const updatedEvents = [...events, eventToAdd]
       setEvents(updatedEvents)
-      saveToLocalStorage({ timelineEvents: updatedEvents })
+      //saveToLocalStorage({ timelineEvents: updatedEvents })
       setNewEvent({})
       toast({
         title: "אירוע נוסף",
@@ -155,6 +156,7 @@ export function Timeline() {
           </div>
         </CardContent>
       </Card>
+      <SaveDataButton data={events} collectionName="weddings" documentId={user?.uid || ""} />
     </div>
   )
 }

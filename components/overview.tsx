@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Users, DollarSign, CheckSquare, Calendar, Clock, AlertCircle, Camera, Edit, CalendarHeart } from "lucide-react"
-import { getFromLocalStorage, saveToLocalStorage } from "@/lib/storage"
 import type { Guest, Task, BudgetItem, WeddingDetails } from "@/lib/types"
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Badge } from "@/components/ui/badge"
@@ -13,9 +13,11 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/components/auth-provider"
-import { dummyWeddingDetails, dummyGuests, dummyTasks, dummyBudgetItems, dummyTimelineEvents } from "@/lib/dummyData"
 import { useCustomToast } from "./ui/custom-toast"
 import { useTranslation } from "@/hooks/useTranslation"
+import { db } from "@/lib/firebase"
+import { doc, updateDoc } from "firebase/firestore"
+import { SaveDataButton } from "./save-data-button"
 
 interface TimelineEvent {
   id: string
@@ -26,61 +28,54 @@ interface TimelineEvent {
 
 interface OverviewProps {
   isSharedView?: boolean
+  weddingData?: any
 }
 
 export function Overview({ isSharedView = false }: OverviewProps) {
-  const { demoMode } = useAuth()
+  const { user, demoMode, weddingData } = useAuth()
   const { t } = useTranslation()
   const customToast = useCustomToast()
+  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
-  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails | null>(null)
+  const [weddingDetailsState, setWeddingDetailsState] = useState<WeddingDetails | null>(null)
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([])
   const [couplePhoto, setCouplePhoto] = useState<string | null>(null)
-  const [dataUpdated, setDataUpdated] = useState(false)
 
   useEffect(() => {
-    if (demoMode) {
-      setGuests(dummyGuests)
-      setTasks(dummyTasks)
-      setBudgetItems(dummyBudgetItems)
-      setWeddingDetails(dummyWeddingDetails)
-      setTimelineEvents(dummyTimelineEvents)
-      setCouplePhoto("/placeholder.svg") // Use a placeholder image for demo mode
-    } else {
-      const storedData = getFromLocalStorage()
-      setGuests(storedData.guests || [])
-      setTasks(storedData.tasks || [])
-      setBudgetItems(storedData.budgetItems || [])
-      setWeddingDetails(storedData.weddingDetails || null)
-      setTimelineEvents(storedData.timelineEvents || [])
-      setCouplePhoto(storedData.couplePhoto || null)
+    if (weddingData) {
+      setWeddingDetails(weddingData.weddingDetails)
+      setGuests(weddingData.guests || [])
+      setTasks(weddingData.tasks || [])
+      setBudgetItems(weddingData.budgetItems || [])
+      setTimelineEvents(weddingData.timelineEvents || [])
+      setCouplePhoto(weddingData.couplePhoto || null)
     }
-  }, [demoMode, dataUpdated])
+  }, [weddingData])
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (demoMode || isSharedView) return // Prevent photo upload in demo mode or shared view
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (demoMode || !user) return
 
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64String = reader.result as string
         setCouplePhoto(base64String)
-        saveToLocalStorage({ couplePhoto: base64String })
-        customToast.success(t("photoUpdated"), t("photoUpdatedDescription"))
+        try {
+          await updateDoc(doc(db, "weddings", user.uid), { couplePhoto: base64String })
+          customToast.success(t("photoUpdated"), t("photoUpdatedDescription"))
+        } catch (error) {
+          console.error("Error updating photo:", error)
+          customToast.error(t("errorUpdatingPhoto"), t("errorUpdatingPhotoDescription"))
+        }
       }
       reader.readAsDataURL(file)
     }
   }
 
   const handleUpdateData = () => {
-    if (!isSharedView) return
-
-    // In a real app, this would be an API call to update the data
-    // For now, we'll just refresh the data from localStorage
-    setDataUpdated((prev) => !prev)
     customToast.success(t("dataUpdated"), t("dataUpdatedDescription"))
   }
 
@@ -120,12 +115,10 @@ export function Overview({ isSharedView = false }: OverviewProps) {
     : null
 
   return (
-    <div className="space-y-8">
-      {isSharedView && (
-        <div className="flex justify-end mb-4">
-          <Button onClick={handleUpdateData}>{t("refreshData")}</Button>
-        </div>
-      )}
+    <div className="space-y-6">
+      <div className="flex justify-end mb-4">
+        <Button onClick={handleUpdateData}>{t("refreshData")}</Button>
+      </div>
 
       <Card className="overflow-hidden border-none shadow-card">
         <div className="bg-gradient-to-r from-primary/90 to-pink-500/90 text-white">
@@ -169,7 +162,7 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                         alt={t("couplePhoto")}
                         className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg"
                       />
-                      {!isSharedView && !demoMode && (
+                      {!demoMode && (
                         <label
                           htmlFor="photo-upload"
                           className="absolute bottom-2 right-2 cursor-pointer bg-white text-primary rounded-full p-2 shadow-md hover:bg-white/90 transition-colors"
@@ -187,7 +180,7 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                     </div>
                   ) : (
                     <div className="w-48 h-48 bg-white/20 rounded-full flex items-center justify-center border-4 border-white/30">
-                      {!isSharedView && !demoMode ? (
+                      {!demoMode ? (
                         <label htmlFor="photo-upload" className="cursor-pointer text-center">
                           <Camera className="h-12 w-12 mx-auto mb-2" />
                           <span className="text-sm">{t("addPhoto")}</span>
@@ -399,6 +392,7 @@ export function Overview({ isSharedView = false }: OverviewProps) {
           <p className="text-lg">{t("weddingTipContent")}</p>
         </CardContent>
       </Card>
+      {!demoMode && <SaveDataButton data={weddingData} collectionName="weddings" documentId={user?.uid || ""} />}
     </div>
   )
 }

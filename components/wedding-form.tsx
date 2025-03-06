@@ -5,16 +5,19 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { WeddingDetails } from "@/lib/types"
-import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { saveToLocalStorage } from "@/lib/storage"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/components/auth-provider"
+import { SaveDataButton } from "@/components/save-data-button"
 
 export function WeddingForm() {
   const { toast } = useToast()
+  const { user, demoMode, weddingData } = useAuth()
   const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>({
     groomName: "",
     brideName: "",
@@ -24,11 +27,10 @@ export function WeddingForm() {
   })
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    if (storedData.weddingDetails) {
-      setWeddingDetails(storedData.weddingDetails)
+    if (weddingData?.weddingDetails) {
+      setWeddingDetails(weddingData.weddingDetails)
     }
-  }, [])
+  }, [weddingData])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -124,6 +126,7 @@ export function WeddingForm() {
           </Button>
         </form>
       </CardContent>
+      <SaveDataButton data={weddingDetails} collectionName="weddings" documentId={user?.uid || ""} />
     </Card>
   )
 }

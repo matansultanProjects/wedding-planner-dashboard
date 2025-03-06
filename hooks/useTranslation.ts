@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { translations } from "@/lib/translations"
 
 export function useTranslation() {
-  const [language, setLanguage] = useState("he") // Set Hebrew as default
+  const [language, setLanguage] = useState("he") // שינוי ברירת המחדל לעברית
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language") || "he"
@@ -18,7 +18,7 @@ export function useTranslation() {
     localStorage.setItem("language", newLanguage)
     document.documentElement.lang = newLanguage
     document.documentElement.dir = newLanguage === "he" ? "rtl" : "ltr"
-    window.location.reload() // Reload the page to apply changes everywhere
+    window.location.reload() // רענון הדף כדי להחיל את השינויים בכל מקום
   }
 
   const t = (key: string, variables?: Record<string, string>) => {

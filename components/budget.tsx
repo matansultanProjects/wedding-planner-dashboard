@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
+import { saveToLocalStorage } from "@/lib/storage"
 import { useCustomToast } from "@/components/ui/custom-toast"
 import { useTranslation } from "@/hooks/useTranslation"
-import { useAuth } from "./auth-provider"
+import { useAuth } from "@/components/auth-provider"
+import { SaveDataButton } from "./save-data-button"
 
 interface BudgetItem {
   id: string
@@ -29,18 +30,17 @@ interface BudgetProps {
 
 export function Budget({ isSharedView = false }: BudgetProps) {
   const customToast = useCustomToast()
-  const { demoMode } = useAuth()
+  const { demoMode, user, weddingData } = useAuth()
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
   const [newItem, setNewItem] = useState<Partial<BudgetItem>>({})
   const [dataUpdated, setDataUpdated] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    if (storedData.budgetItems) {
-      setBudgetItems(storedData.budgetItems)
+    if (weddingData?.budgetItems) {
+      setBudgetItems(weddingData.budgetItems)
     }
-  }, [dataUpdated])
+  }, [weddingData])
 
   const handleAddItem = () => {
     if (isSharedView || demoMode) return
@@ -76,7 +76,7 @@ export function Budget({ isSharedView = false }: BudgetProps) {
   const totalActual = budgetItems.reduce((sum, item) => sum + (item.actual || 0), 0)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {isSharedView && (
         <div className="flex justify-end mb-4">
           <Button onClick={handleUpdateData} className="gap-2">
@@ -209,6 +209,7 @@ export function Budget({ isSharedView = false }: BudgetProps) {
           </div>
         </CardContent>
       </Card>
+      <SaveDataButton data={budgetItems} collectionName="weddings" documentId={user?.uid || ""} />
     </div>
   )
 }

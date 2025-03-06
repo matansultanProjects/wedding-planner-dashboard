@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react"
+import type React from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -16,7 +17,6 @@ import {
   Briefcase,
   Settings,
   Heart,
-  LogOut,
   ArrowLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -37,19 +37,19 @@ import {
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { SupportChat } from "./support-chat"
-import { useTranslation } from "@/hooks/useTranslation"
 import { ShareLink } from "./share-link"
+import { motion, AnimatePresence } from "framer-motion"
 
 const navItems = [
-  { href: "/dashboard", label: "dashboardTitle", icon: Home },
-  { href: "/wedding-details", label: "weddingDetails", icon: Heart },
-  { href: "/guests", label: "guestsPageTitle", icon: Users },
-  { href: "/seating", label: "seatingPageTitle", icon: Users },
-  { href: "/budget", label: "budgetPageTitle", icon: DollarSign },
-  { href: "/tasks", label: "tasksPageTitle", icon: CheckSquare },
-  { href: "/timeline", label: "timelinePageTitle", icon: Clock },
-  { href: "/vendors", label: "vendorsPageTitle", icon: Briefcase },
-  { href: "/settings", label: "settingsPageTitle", icon: Settings },
+  { href: "/dashboard", label: "לוח בקרה", icon: Home },
+  { href: "/wedding-details", label: "פרטי חתונה", icon: Heart },
+  { href: "/guests", label: "רשימת אורחים", icon: Users },
+  { href: "/seating", label: "סידורי הושבה", icon: Users },
+  { href: "/budget", label: "תקציב", icon: DollarSign },
+  { href: "/tasks", label: "משימות", icon: CheckSquare },
+  { href: "/timeline", label: "ציר זמן", icon: Clock },
+  { href: "/vendors", label: "ספקים", icon: Briefcase },
+  { href: "/settings", label: "הגדרות", icon: Settings },
 ]
 
 interface MainLayoutProps {
@@ -60,19 +60,20 @@ interface MainLayoutProps {
 export function MainLayout({ children, isSharedView = false }: MainLayoutProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const { user, signOut, demoMode } = useAuth()
   const router = useRouter()
-  const { t, language, changeLanguage } = useTranslation()
+  const [scrollY, setScrollY] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
     router.push("/login")
-  }
-
-  const toggleLanguage = () => {
-    const newLanguage = language === "he" ? "en" : "he"
-    changeLanguage(newLanguage)
   }
 
   const exitSharedView = () => {
@@ -83,9 +84,17 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
 
   return (
     <AuthGuard>
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
-          <div className="px-5 flex h-16 items-center justify-between py-4">
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-background to-secondary/10">
+        <motion.header
+          className={cn(
+            "sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+            scrollY > 0 && "border-b shadow-sm",
+          )}
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          <div className="container flex h-16 items-center justify-between py-4">
             <div className="flex items-center gap-2">
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
@@ -94,99 +103,86 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
-                  <div className="flex flex-col h-full">
+                  <nav className="flex flex-col h-full">
                     <div className="p-6 border-b">
                       <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                         <Calendar className="h-6 w-6 text-primary" />
-                        <span className="text-xl font-bold">{t("wedfullTitle")}</span>
+                        <span className="text-xl font-bold">wedfull - מתכנן החתונה שלך</span>
                       </Link>
                     </div>
-                    <nav className="flex flex-col p-6 space-y-6 flex-1">
-                      {navItems.map((item) => {
-                        const Icon = item.icon
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                              "flex items-center gap-3 text-base font-medium transition-colors hover:text-primary",
-                              pathname === item.href ? "text-primary font-semibold" : "text-muted-foreground",
-                            )}
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <Icon className="h-5 w-5" />
-                            {t(item.label)}
-                          </Link>
-                        )
-                      })}
-                    </nav>
-                    <div className="p-6 border-t mt-auto">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-9 w-9">
-                            {user ? (
-                              <>
-                                <AvatarImage src={user.photoURL || ""} alt={user.displayName || ""} />
-                                <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
-                              </>
-                            ) : (
-                              <AvatarFallback>G</AvatarFallback>
-                            )}
-                          </Avatar>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {user ? user.displayName || user.email : t("guest")}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {demoMode && (
-                                <Badge variant="outline" className="text-xs">
-                                  {t("demoMode")}
-                                </Badge>
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={handleSignOut}>
-                          <LogOut className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    <div className="flex-1 overflow-auto py-6">
+                      <AnimatePresence>
+                        {navItems.map((item, index) => {
+                          const Icon = item.icon
+                          return (
+                            <motion.div
+                              key={item.href}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: 20 }}
+                              transition={{ delay: index * 0.1 }}
+                            >
+                              <Link
+                                href={item.href}
+                                className={cn(
+                                  "flex items-center gap-3 px-6 py-3 text-base font-medium transition-colors hover:bg-secondary",
+                                  pathname === item.href ? "text-primary bg-secondary" : "text-muted-foreground",
+                                )}
+                                onClick={() => setIsOpen(false)}
+                              >
+                                <Icon className="h-5 w-5" />
+                                {item.label}
+                              </Link>
+                            </motion.div>
+                          )
+                        })}
+                      </AnimatePresence>
                     </div>
-                  </div>
+                  </nav>
                 </SheetContent>
               </Sheet>
               <Link href="/dashboard" className="flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary hidden md:block" />
-                <span className="text-xl font-bold gradient-text">{t("wedfullTitle")}</span>
+                <span className="text-xl font-bold gradient-text">wedfull - מתכנן החתונה שלך</span>
               </Link>
             </div>
             <div className="flex items-center gap-4">
               {isSharedView && (
                 <Button variant="outline" size="sm" onClick={exitSharedView} className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
-                  {t("exitSharedView")}
+                  חזור לחתונה שלי
                 </Button>
               )}
 
               {!isSharedView && !demoMode && <ShareLink />}
 
-              <nav className="hidden md:flex items-center space-x-1 mr-4">
-                {navItems.map((item) => {
-                  const Icon = item.icon
-                  const isActive = pathname === item.href
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                        isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground",
-                      )}
-                    >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {t(item.label)}
-                    </Link>
-                  )
-                })}
+              <nav className="hidden md:flex items-center space-x-1">
+                <AnimatePresence>
+                  {navItems.map((item, index) => {
+                    const Icon = item.icon
+                    const isActive = pathname === item.href
+                    return (
+                      <motion.div
+                        key={item.href}
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                            isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground",
+                          )}
+                        >
+                          <Icon className="h-4 w-4 mr-2" />
+                          {item.label}
+                        </Link>
+                      </motion.div>
+                    )
+                  })}
+                </AnimatePresence>
               </nav>
               <Button
                 variant="ghost"
@@ -195,9 +191,6 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
                 className="rounded-full"
               >
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={toggleLanguage}>
-                {language === "he" ? "EN" : "עב"}
               </Button>
 
               <DropdownMenu>
@@ -209,41 +202,50 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
                         <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
                       </>
                     ) : (
-                      <AvatarFallback>G</AvatarFallback>
+                      <AvatarFallback>א</AvatarFallback>
                     )}
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>
-                    {user ? user.displayName || user.email : t("guest")}
+                    {user ? user.displayName || user.email : "אורח"}
                     {demoMode && (
                       <Badge variant="outline" className="mr-2 text-xs">
-                        {t("demoMode")}
+                        מצב הדגמה
                       </Badge>
                     )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <Link href="/settings" className="w-full">
-                      {t("settingsPageTitle")}
+                      הגדרות
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>{t("signOut")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>התנתקות</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
-        </header>
+        </motion.header>
         <main className="flex-1 container py-8">
-          <div className="animate-fade-in">{children}</div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {children}
+          </motion.div>
         </main>
         <footer className="border-t py-6 bg-muted/30">
           <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              <p className="text-sm font-medium">{t("wedfullFooter")}</p>
+              <p className="text-sm font-medium">wedfull - מתכנן החתונה שלך</p>
             </div>
-            <p className="text-center text-sm text-muted-foreground md:text-right">{t("builtWithLove")}</p>
+            <p className="text-center text-sm text-muted-foreground md:text-right">
+              נבנה באהבה עבור היום המיוחד שלכם ❤️
+            </p>
           </div>
         </footer>
         <SupportChat />
