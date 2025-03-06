@@ -1,10 +1,21 @@
+"use client"
+
 import { MainLayout } from "@/components/main-layout"
 import { TaskManager } from "@/components/task-manager"
+import { useState, useEffect } from "react"
 
 export default function TasksPage() {
+  const [isSharedView, setIsSharedView] = useState(false)
+
+  useEffect(() => {
+    // Check if we're in a shared view
+    const sharedView = localStorage.getItem("viewingSharedWedding") === "true"
+    setIsSharedView(sharedView)
+  }, [])
+
   return (
-    <MainLayout>
-      <TaskManager />
+    <MainLayout isSharedView={isSharedView}>
+      <TaskManager isSharedView={isSharedView} />
     </MainLayout>
   )
 }

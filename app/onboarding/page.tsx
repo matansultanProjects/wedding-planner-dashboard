@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,9 +12,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Heart, CalendarIcon, Users, ArrowRight, ArrowLeft } from "lucide-react"
 import type { WeddingDetails } from "@/lib/types"
-import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
 import { useAuth } from "@/components/auth-provider"
-import { dummyWeddingDetails } from "@/lib/dummyData"
+import { useCustomToast } from "@/components/ui/custom-toast"
+import { useTranslation } from "@/hooks/useTranslation"
 
 const steps = [
   { id: 1, title: "פרטים בסיסיים", icon: Heart },
@@ -24,28 +24,32 @@ const steps = [
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { user, demoMode } = useAuth()
+  const { user, demoMode, createWedding, hasCreatedWedding } = useAuth()
+  const { t } = useTranslation()
+  const customToast = useCustomToast()
   const [currentStep, setCurrentStep] = useState(1)
-  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>(dummyWeddingDetails)
+  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>({
+    groomName: "",
+    brideName: "",
+    date: "",
+    venue: "",
+    estimatedGuests: 0,
+  })
 
   useEffect(() => {
     if (demoMode) {
-      // Skip onboarding for demo mode users
       router.push("/dashboard")
-    } else if (user) {
-      const storedData = getFromLocalStorage()
-      if (storedData.weddingDetails) {
-        setWeddingDetails(storedData.weddingDetails)
-      }
+    } else if (user && hasCreatedWedding) {
+      router.push("/dashboard")
     }
-  }, [user, demoMode, router])
+  }, [user, demoMode, hasCreatedWedding, router])
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
     } else {
-      if (!demoMode) {
-        saveToLocalStorage({ weddingDetails })
+      if (!demoMode && user) {
+        await createWedding(weddingDetails)
       }
       router.push("/dashboard")
     }
@@ -103,107 +107,105 @@ export default function OnboardingPage() {
         {/* Form Steps */}
         <Card className="w-full">
           <CardContent className="p-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                {currentStep === 1 && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-8">
-                      <h1 className="text-3xl font-bold gradient-text mb-2">ברוכים הבאים!</h1>
-                      <p className="text-muted-foreground">בואו נתחיל בהכרות קצרה</p>
-                    </div>
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="groomName">שם החתן</Label>
-                        <Input
-                          id="groomName"
-                          placeholder="הכנס את שם החתן"
-                          value={weddingDetails.groomName}
-                          onChange={(e) => setWeddingDetails({ ...weddingDetails, groomName: e.target.value })}
-                          readOnly={demoMode}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="brideName">שם הכלה</Label>
-                        <Input
-                          id="brideName"
-                          placeholder="הכנס את שם הכלה"
-                          value={weddingDetails.brideName}
-                          onChange={(e) => setWeddingDetails({ ...weddingDetails, brideName: e.target.value })}
-                          readOnly={demoMode}
-                        />
-                      </div>
-                    </div>
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {currentStep === 1 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold gradient-text mb-2">ברוכים הבאים!</h1>
+                    <p className="text-muted-foreground">בואו נתחיל בהכרות קצרה</p>
                   </div>
-                )}
-
-                {currentStep === 2 && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-8">
-                      <h1 className="text-3xl font-bold gradient-text mb-2">מתי החתונה?</h1>
-                      <p className="text-muted-foreground">בחרו את התאריך המיוחל</p>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="groomName">שם החתן</Label>
+                      <Input
+                        id="groomName"
+                        placeholder="הכנס את שם החתן"
+                        value={weddingDetails.groomName}
+                        onChange={(e) => setWeddingDetails({ ...weddingDetails, groomName: e.target.value })}
+                        readOnly={demoMode}
+                      />
                     </div>
-                    <div className="flex justify-center">
-                      <Calendar
-                        mode="single"
-                        selected={weddingDetails.date ? new Date(weddingDetails.date) : undefined}
-                        onSelect={(date) => date && setWeddingDetails({ ...weddingDetails, date: date.toISOString() })}
-                        className="rounded-md border"
-                        disabled={demoMode}
+                    <div className="space-y-2">
+                      <Label htmlFor="brideName">שם הכלה</Label>
+                      <Input
+                        id="brideName"
+                        placeholder="הכנס את שם הכלה"
+                        value={weddingDetails.brideName}
+                        onChange={(e) => setWeddingDetails({ ...weddingDetails, brideName: e.target.value })}
+                        readOnly={demoMode}
                       />
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {currentStep === 3 && (
+              {currentStep === 2 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold gradient-text mb-2">מתי החתונה?</h1>
+                    <p className="text-muted-foreground">בחרו את התאריך המיוחל</p>
+                  </div>
+                  <div className="flex justify-center">
+                    <Calendar
+                      mode="single"
+                      selected={weddingDetails.date ? new Date(weddingDetails.date) : undefined}
+                      onSelect={(date) => date && setWeddingDetails({ ...weddingDetails, date: date.toISOString() })}
+                      className="rounded-md border"
+                      disabled={demoMode}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold gradient-text mb-2">פרטי האירוע</h1>
+                    <p className="text-muted-foreground">כמה פרטים אחרונים ונתחיל!</p>
+                  </div>
                   <div className="space-y-6">
-                    <div className="text-center mb-8">
-                      <h1 className="text-3xl font-bold gradient-text mb-2">פרטי האירוע</h1>
-                      <p className="text-muted-foreground">כמה פרטים אחרונים ונתחיל!</p>
+                    <div className="space-y-2">
+                      <Label htmlFor="venue">מקום האירוע</Label>
+                      <Select
+                        value={weddingDetails.venue}
+                        onValueChange={(value) => setWeddingDetails({ ...weddingDetails, venue: value })}
+                        disabled={demoMode}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="בחר מקום" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="אולם אירועים">אולם אירועים</SelectItem>
+                          <SelectItem value="גן אירועים">גן אירועים</SelectItem>
+                          <SelectItem value="חוף הים">חוף הים</SelectItem>
+                          <SelectItem value="מקום אחר">מקום אחר</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="venue">מקום האירוע</Label>
-                        <Select
-                          value={weddingDetails.venue}
-                          onValueChange={(value) => setWeddingDetails({ ...weddingDetails, venue: value })}
-                          disabled={demoMode}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="בחר מקום" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="אולם אירועים">אולם אירועים</SelectItem>
-                            <SelectItem value="גן אירועים">גן אירועים</SelectItem>
-                            <SelectItem value="חוף הים">חוף הים</SelectItem>
-                            <SelectItem value="מקום אחר">מקום אחר</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="estimatedGuests">מספר אורחים משוער</Label>
-                        <Input
-                          id="estimatedGuests"
-                          type="number"
-                          placeholder="הכנס מספר אורחים משוער"
-                          value={weddingDetails.estimatedGuests || ""}
-                          onChange={(e) =>
-                            setWeddingDetails({ ...weddingDetails, estimatedGuests: Number(e.target.value) })
-                          }
-                          readOnly={demoMode}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="estimatedGuests">מספר אורחים משוער</Label>
+                      <Input
+                        id="estimatedGuests"
+                        type="number"
+                        placeholder="הכנס מספר אורחים משוער"
+                        value={weddingDetails.estimatedGuests || ""}
+                        onChange={(e) =>
+                          setWeddingDetails({ ...weddingDetails, estimatedGuests: Number(e.target.value) })
+                        }
+                        readOnly={demoMode}
+                      />
                     </div>
                   </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                </div>
+              )}
+            </motion.div>
 
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8">

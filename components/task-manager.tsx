@@ -6,19 +6,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Task } from "@/lib/types"
-import { getFromLocalStorage, saveToLocalStorage } from "@/lib/storage"
 import { PlusCircle, Edit, Trash } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/components/auth-provider"
+import { SaveDataButton } from "@/components/save-data-button"
 
 export function TaskManager() {
   const { toast } = useToast()
+  const { user, demoMode, weddingData } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTask, setNewTask] = useState({ title: "", description: "", dueDate: "", category: "" })
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    setTasks(storedData.tasks)
-  }, [])
+    if (weddingData?.tasks) {
+      setTasks(weddingData.tasks)
+    }
+  }, [weddingData])
 
   const addTask = () => {
     if (newTask.title) {
@@ -29,7 +32,7 @@ export function TaskManager() {
       }
       const updatedTasks = [...tasks, task]
       setTasks(updatedTasks)
-      saveToLocalStorage({ tasks: updatedTasks })
+      //saveToLocalStorage({ tasks: updatedTasks })
       setNewTask({ title: "", description: "", dueDate: "", category: "" })
       toast({
         title: "משימה נוספה",
@@ -51,14 +54,14 @@ export function TaskManager() {
       return task
     })
     setTasks(updatedTasks)
-    saveToLocalStorage({ tasks: updatedTasks })
+    //saveToLocalStorage({ tasks: updatedTasks })
   }
 
   const deleteTask = (id: string) => {
     const taskName = tasks.find((t) => t.id === id)?.title
     const updatedTasks = tasks.filter((task) => task.id !== id)
     setTasks(updatedTasks)
-    saveToLocalStorage({ tasks: updatedTasks })
+    //saveToLocalStorage({ tasks: updatedTasks })
     toast({
       title: "משימה נמחקה",
       description: `המשימה "${taskName}" נמחקה בהצלחה`,
@@ -123,6 +126,7 @@ export function TaskManager() {
           </div>
         </CardContent>
       </Card>
+      <SaveDataButton data={tasks} collectionName="weddings" documentId={user?.uid || ""} />
     </div>
   )
 }

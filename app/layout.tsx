@@ -5,18 +5,17 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { LanguageDetector } from "@/components/language-detector"
 
 // Load Heebo font with Hebrew and Latin subsets
 const heebo = Heebo({
-  subsets: ["latin"],
+  subsets: ["latin", "hebrew"],
   variable: "--font-sans",
   display: "swap",
 })
 
 // Load Rubik font with Hebrew and Latin subsets
 const rubik = Rubik({
-  subsets: ["latin"],
+  subsets: ["latin", "hebrew"],
   variable: "--font-heading",
   display: "swap",
 })
@@ -37,7 +36,6 @@ export default function RootLayout({
       <body className={`${heebo.variable} ${rubik.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
-            <LanguageDetector />
             {children}
             <Toaster />
           </AuthProvider>
@@ -46,8 +44,6 @@ export default function RootLayout({
     </html>
   )
 }
-
-import "./globals.css"
 
 
 

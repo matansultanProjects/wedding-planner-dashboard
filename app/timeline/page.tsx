@@ -1,10 +1,21 @@
+"use client"
+
 import { MainLayout } from "@/components/main-layout"
 import { Timeline } from "@/components/timeline"
+import { useState, useEffect } from "react"
 
 export default function TimelinePage() {
+  const [isSharedView, setIsSharedView] = useState(false)
+
+  useEffect(() => {
+    // Check if we're in a shared view
+    const sharedView = localStorage.getItem("viewingSharedWedding") === "true"
+    setIsSharedView(sharedView)
+  }, [])
+
   return (
-    <MainLayout>
-      <Timeline />
+    <MainLayout isSharedView={isSharedView}>
+      <Timeline isSharedView={isSharedView} />
     </MainLayout>
   )
 }

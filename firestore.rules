@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(weddingId) {
+      return isAuthenticated() && request.auth.uid == weddingId;
+    }
+
+    function isShared(weddingId) {
+      return exists(/databases/$(database)/documents/weddingShares/$(weddingId));
+    }
+
+    match /weddings/{weddingId} {
+      allow read: if isOwner(weddingId) || isShared(weddingId);
+      allow write: if isOwner(weddingId);
+      
+      match /{subcollection}/{document=**} {
+        allow read: if isOwner(weddingId) || isShared(weddingId);
+        allow write: if isOwner(weddingId);
+      }
+    }
+
+    match /weddingShares/{shareId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() && resource.data.weddingId == request.auth.uid;
+    }
+  }
+}
+

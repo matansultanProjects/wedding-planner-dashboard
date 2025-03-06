@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { PlusCircle, Phone, Mail, DollarSign, Briefcase, User, Edit, Trash } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { saveToLocalStorage, getFromLocalStorage } from "@/lib/storage"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/components/auth-provider"
+import { SaveDataButton } from "@/components/save-data-button"
 
 interface Vendor {
   id: string
@@ -24,17 +25,17 @@ interface Vendor {
 }
 
 export function VendorManager() {
+  const { user, demoMode, weddingData } = useAuth()
   const { toast } = useToast()
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [newVendor, setNewVendor] = useState<Partial<Vendor>>({})
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null)
 
   useEffect(() => {
-    const storedData = getFromLocalStorage()
-    if (storedData.vendors) {
-      setVendors(storedData.vendors)
+    if (weddingData?.vendors) {
+      setVendors(weddingData.vendors)
     }
-  }, [])
+  }, [weddingData])
 
   const handleAddVendor = () => {
     if (newVendor.name && newVendor.category && newVendor.contact) {
@@ -50,7 +51,7 @@ export function VendorManager() {
       }
       const updatedVendors = [...vendors, vendorToAdd]
       setVendors(updatedVendors)
-      saveToLocalStorage({ vendors: updatedVendors })
+      //saveToLocalStorage({ vendors: updatedVendors })
       setNewVendor({})
       toast({
         title: "ספק נוסף",
@@ -63,7 +64,7 @@ export function VendorManager() {
     if (editingVendor) {
       const updatedVendors = vendors.map((v) => (v.id === editingVendor.id ? editingVendor : v))
       setVendors(updatedVendors)
-      saveToLocalStorage({ vendors: updatedVendors })
+      //saveToLocalStorage({ vendors: updatedVendors })
       setEditingVendor(null)
       toast({
         title: "ספק עודכן",
@@ -76,7 +77,7 @@ export function VendorManager() {
     const vendorName = vendors.find((v) => v.id === id)?.name
     const updatedVendors = vendors.filter((v) => v.id !== id)
     setVendors(updatedVendors)
-    saveToLocalStorage({ vendors: updatedVendors })
+    //saveToLocalStorage({ vendors: updatedVendors })
     toast({
       title: "ספק הוסר",
       description: `${vendorName} הוסר מרשימת הספקים`,
@@ -348,6 +349,7 @@ export function VendorManager() {
           </div>
         </CardContent>
       </Card>
+      <SaveDataButton data={vendors} collectionName="weddings" documentId={user?.uid || ""} />
     </div>
   )
 }
