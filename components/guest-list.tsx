@@ -22,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useTranslation } from "@/hooks/useTranslation"
 import { useAuth } from "@/components/auth-provider"
 import { SaveDataButton } from "./save-data-button"
-import { collection, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore"
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
 interface GuestListProps {
@@ -115,29 +115,48 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
     return matchesSearch && matchesFilter
   })
 
+  // נעדכן את הפונקציה handleAddGuest כדי לשפר את הסנכרון עם מסד הנתונים
   const handleAddGuest = async () => {
     if (isSharedView || demoMode) return
 
     if (newGuest.fullName) {
       const guestToAdd: Guest = {
-        id: "",
+        id: Date.now().toString(),
         fullName: newGuest.fullName,
         phoneNumber: newGuest.phoneNumber || "",
-        relation: (newGuest.relation as Guest["relation"]) || t("friends"),
+        relation: (newGuest.relation as Guest["relation"]) || "חברים",
         invitedCount: newGuest.invitedCount || 1,
-        confirmed: (newGuest.confirmed as Guest["confirmed"]) || t("maybe"),
+        confirmed: (newGuest.confirmed as Guest["confirmed"]) || "אולי",
         specialNotes: newGuest.specialNotes || "",
       }
 
       try {
-        const docRef = await addDoc(collection(db, "weddings", user!.uid, "guests"), guestToAdd)
-        guestToAdd.id = docRef.id
+        if (db && user) {
+          // הוספה לתת-אוסף של אורחים
+          const docRef = await addDoc(collection(db, "weddings", user.uid, "guests"), guestToAdd)
+          guestToAdd.id = docRef.id
+
+          // עדכון המסמך הראשי עם האורח החדש
+          const weddingRef = doc(db, "weddings", user.uid)
+          const weddingDoc = await getDoc(weddingRef)
+
+          if (weddingDoc.exists()) {
+            const currentGuests = weddingDoc.data().guests || []
+            await updateDoc(weddingRef, {
+              guests: [...currentGuests, guestToAdd],
+            })
+          }
+        }
+
+        // עדכון המצב המקומי
+        const updatedGuests = [...guests, guestToAdd]
+        setGuests(updatedGuests)
         setNewGuest({})
         setIsAddDialogOpen(false)
-        customToast.success(t("guestAdded"), t("guestAddedDescription", { name: guestToAdd.fullName }))
+        customToast.success("אורח נוסף", `האורח ${guestToAdd.fullName} נוסף בהצלחה`)
       } catch (error) {
-        console.error("Error adding guest:", error)
-        customToast.error(t("errorAddingGuest"), t("errorAddingGuestDescription"))
+        console.error("שגיאה בהוספת אורח:", error)
+        customToast.error("שגיאה בהוספת אורח", "אירעה שגיאה בעת הוספת אורח")
       }
     }
   }
@@ -178,13 +197,28 @@ export function GuestList({ isSharedView = false }: GuestListProps) {
     }
   }
 
+  // נעדכן את הפונקציה handleUpdateData כדי לרענן את הנתונים ממסד הנתונים
   const handleUpdateData = () => {
     if (!isSharedView) return
 
-    // In a real app, this would be an API call to update the data
-    // For now, we'll just refresh the data from localStorage
-    //fetchGuests()
-    customToast.success(t("dataUpdated"), t("dataUpdatedDescription"))
+    // רענון הנתונים ממסד הנתונים
+    if (user && !demoMode) {
+      const weddingRef = doc(db, "weddings", user.uid)
+      getDoc(weddingRef)
+        .then((docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data()
+            if (data.guests) {
+              setGuests(data.guests)
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("שגיאה בטעינת נתונים:", error)
+        })
+    }
+
+    customToast.success("הנתונים עודכנו", "הנתונים עודכנו בהצלחה")
   }
 
   // Calculate statistics

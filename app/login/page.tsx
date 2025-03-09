@@ -31,18 +31,19 @@ export default function LoginPage() {
     setAuthError(null)
     try {
       await signIn()
-      customToast.success("התחברות הצליחה", "ברוכים הבאים ל-wedfull!")
-      router.push("/onboarding")
+      // Note: The success toast is now handled in the signIn function
     } catch (error: any) {
       console.error("Login error:", error)
 
       if (error.code === "auth/unauthorized-domain") {
-        setAuthError("This domain is not authorized for authentication. you may need to use the demo mode.")
+        setAuthError("This domain is not authorized for authentication. You may need to use the demo mode.")
+      } else if (error.code === "auth/invalid-api-key") {
+        setAuthError("Invalid API key. Please use demo mode instead.")
+        customToast.error("שגיאת התחברות", "מפתח API לא תקין. אנא השתמש במצב הדגמה.")
       } else {
         setAuthError(error.message || "An error occurred during login")
+        customToast.error("שגיאת התחברות", "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר יותר.")
       }
-
-      customToast.error("שגיאת התחברות", "אירעה שגיאה בעת ההתחברות. אנא נסה שוב מאוחר יותר.")
     } finally {
       setIsLoading(false)
     }

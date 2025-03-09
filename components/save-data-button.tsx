@@ -2,102 +2,67 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/components/auth-provider"
 import { useCustomToast } from "@/components/ui/custom-toast"
-import { doc, setDoc } from "firebase/firestore"
+import { doc, setDoc, updateDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { useTranslation } from "@/hooks/useTranslation"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { useAuth } from "./auth-provider"
 
 interface SaveDataButtonProps {
   data: any
   collectionName: string
   documentId: string
+  fieldName?: string
 }
 
-export function SaveDataButton({ data, collectionName, documentId }: SaveDataButtonProps) {
+export function SaveDataButton({ data, collectionName, documentId, fieldName }: SaveDataButtonProps) {
   const [isSaving, setIsSaving] = useState(false)
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const { user, demoMode, isSharedUser } = useAuth()
   const customToast = useCustomToast()
-  const { t } = useTranslation()
+  const { demoMode } = useAuth()
 
   const handleSave = async () => {
     if (demoMode) {
-      customToast.warning(t("demoModeWarning"), t("demoModeWarningDescription"))
+      customToast.warning("אזהרת מצב הדגמה", "לא ניתן לשמור שינויים במצב הדגמה")
       return
     }
 
-    if (!user && !isSharedUser) {
-      customToast.error(t("notAuthenticated"), t("pleaseLoginToSave"))
+    if (!documentId) {
+      customToast.error("לא מחובר", "אנא התחבר כדי לשמור שינויים")
       return
     }
 
-    setShowConfirmDialog(true)
-  }
-
-  const confirmSave = async () => {
     setIsSaving(true)
+
     try {
       const docRef = doc(db, collectionName, documentId)
 
-      // Convert arrays to objects with numeric keys
-      const processData = (obj: any): any => {
-        if (Array.isArray(obj)) {
-          return obj.reduce((acc, item, index) => {
-            acc[index.toString()] = processData(item)
-            return acc
-          }, {})
-        } else if (typeof obj === "object" && obj !== null) {
-          return Object.entries(obj).reduce((acc, [key, value]) => {
-            acc[key] = processData(value)
-            return acc
-          }, {} as any)
+      if (fieldName) {
+        // Update a specific field in the document
+        const updateData = { [fieldName]: data }
+        await updateDoc(docRef, updateData)
+      } else {
+        // If data is an array, wrap it in an object with the field name
+        if (Array.isArray(data)) {
+          const fieldNameFromCollection = collectionName.endsWith("s") ? collectionName : `${collectionName}s`
+          await setDoc(docRef, { [fieldNameFromCollection]: data }, { merge: true })
+        } else {
+          // If data is an object, update the document
+          await setDoc(docRef, data, { merge: true })
         }
-        return obj
       }
 
-      const processedData = processData(data)
-
-      await setDoc(docRef, processedData, { merge: true })
-      customToast.success(t("dataSaved"), t("dataSavedDescription"))
-    } catch (error) {
-      console.error("Error saving data:", error)
-      customToast.error(t("errorSavingData"), t("errorSavingDataDescription"))
+      customToast.success("הנתונים נשמרו", "הנתונים נשמרו בהצלחה")
+    } catch (error: any) {
+      console.error("שגיאה בשמירת נתונים:", error)
+      customToast.error("שגיאה בשמירת הנתונים", `אירעה שגיאה בעת שמירת הנתונים: ${error.message}. אנא נסה שוב.`)
     } finally {
       setIsSaving(false)
-      setShowConfirmDialog(false)
     }
   }
 
   return (
-    <>
-      <Button onClick={handleSave} disabled={isSaving || demoMode}>
-        {isSaving ? t("saving") : t("saveData")}
-      </Button>
-
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirmSaveTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("confirmSaveDescription")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSave}>{t("confirm")}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <Button onClick={handleSave} disabled={isSaving || demoMode} className="mt-4">
+      {isSaving ? "שומר..." : "שמור נתונים"}
+    </Button>
   )
 }
 

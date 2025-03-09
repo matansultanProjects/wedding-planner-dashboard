@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app"
 import { getAuth } from "firebase/auth"
-import { getFirestore } from "firebase/firestore"
-import { getAnalytics, isSupported } from "firebase/analytics"
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore"
+import { getStorage } from "firebase/storage"
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,16 +13,33 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
-const auth = getAuth(app)
-const db = getFirestore(app)
+// Initialize Firebase only on client side
+let app
+let auth
+let db
+let storage
 
-// Initialize Analytics and get a reference to the service
-let analytics = null
 if (typeof window !== "undefined") {
-  isSupported().then((yes) => yes && (analytics = getAnalytics(app)))
+  try {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
+    auth = getAuth(app)
+    db = getFirestore(app)
+    storage = getStorage(app)
+
+    // Enable offline persistence
+    if (db) {
+      enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === "failed-precondition") {
+          console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time.")
+        } else if (err.code === "unimplemented") {
+          console.warn("The current browser does not support all of the features required to enable persistence")
+        }
+      })
+    }
+  } catch (error) {
+    console.error("Firebase initialization error:", error)
+  }
 }
 
-export { app, auth, db, analytics }
+export { app, auth, db, storage }
 

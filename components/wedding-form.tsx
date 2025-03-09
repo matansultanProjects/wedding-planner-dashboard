@@ -10,10 +10,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { WeddingDetails } from "@/lib/types"
-import { saveToLocalStorage } from "@/lib/storage"
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { SaveDataButton } from "@/components/save-data-button"
+import { db } from "@/lib/firebase"
+import { doc, updateDoc } from "firebase/firestore"
 
 export function WeddingForm() {
   const { toast } = useToast()
@@ -47,14 +48,45 @@ export function WeddingForm() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // נעדכן את הפונקציה handleSubmit כדי לשמור במסד הנתונים במקום באחסון המקומי
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    saveToLocalStorage({ weddingDetails })
-    toast({
-      title: "פרטי החתונה נשמרו",
-      description: "הפרטים עודכנו בהצלחה",
-      variant: "default",
-    })
+
+    if (demoMode) {
+      toast({
+        title: "פרטי החתונה נשמרו",
+        description: "הפרטים עודכנו בהצלחה (מצב הדגמה)",
+        variant: "default",
+      })
+      return
+    }
+
+    if (!user || !db) {
+      toast({
+        title: "שגיאה בשמירת הנתונים",
+        description: "אנא התחבר כדי לשמור את הנתונים",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      // עדכון מסד הנתונים
+      await updateDoc(doc(db, "weddings", user.uid), { weddingDetails })
+
+      toast({
+        title: "פרטי החתונה נשמרו",
+        description: "הפרטים עודכנו בהצלחה",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("שגיאה בשמירת פרטי החתונה:", error)
+      toast({
+        title: "שגיאה בשמירת הנתונים",
+        description: "אירעה שגיאה בעת שמירת הנתונים. אנא נסה שוב.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

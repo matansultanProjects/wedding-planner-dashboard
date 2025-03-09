@@ -40,6 +40,7 @@ import { SupportChat } from "./support-chat"
 import { ShareLink } from "./share-link"
 import { motion, AnimatePresence } from "framer-motion"
 
+// Full navigation items list
 const navItems = [
   { href: "/dashboard", label: "לוח בקרה", icon: Home },
   { href: "/wedding-details", label: "פרטי חתונה", icon: Heart },
@@ -51,6 +52,9 @@ const navItems = [
   { href: "/vendors", label: "ספקים", icon: Briefcase },
   { href: "/settings", label: "הגדרות", icon: Settings },
 ]
+
+// Limited navigation for shared view
+const sharedNavItems = [{ href: "/dashboard", label: "לוח בקרה", icon: Home }]
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -64,6 +68,27 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
   const { user, signOut, demoMode } = useAuth()
   const router = useRouter()
   const [scrollY, setScrollY] = useState(0)
+  const [isSharedViewState, setIsSharedViewState] = useState(isSharedView)
+
+  // Debug log to check user state
+  useEffect(() => {
+    console.log("MainLayout user state:", user ? user.email : "null", "demoMode:", demoMode)
+  }, [user, demoMode])
+
+  useEffect(() => {
+    // Check if we're in a shared view - only run on client side
+    if (typeof window !== "undefined") {
+      const viewingSharedWedding = localStorage.getItem("viewingSharedWedding") === "true"
+      setIsSharedViewState(isSharedView || viewingSharedWedding)
+
+      console.log("MainLayout init:", {
+        viewingSharedWedding,
+        isSharedView,
+        user: user ? "logged in" : "not logged in",
+        demoMode,
+      })
+    }
+  }, [isSharedView, user, demoMode])
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -77,10 +102,24 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
   }
 
   const exitSharedView = () => {
-    localStorage.removeItem("viewingSharedWedding")
-    localStorage.removeItem("sharedWeddingId")
-    router.push("/dashboard")
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("viewingSharedWedding")
+      localStorage.removeItem("sharedWeddingId")
+    }
+    router.push("/")
   }
+
+  // SIMPLIFIED LOGIC:
+  // - For shared view, show only limited navigation
+  // - For all other cases (logged in or demo mode), show full navigation
+  const displayNavItems = isSharedViewState ? sharedNavItems : navItems
+
+  console.log("Menu visibility check:", {
+    isSharedViewState,
+    displayNavItems: displayNavItems.length,
+    user: Boolean(user),
+    demoMode,
+  })
 
   return (
     <AuthGuard>
@@ -112,7 +151,7 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
                     </div>
                     <div className="flex-1 overflow-auto py-6">
                       <AnimatePresence>
-                        {navItems.map((item, index) => {
+                        {displayNavItems.map((item, index) => {
                           const Icon = item.icon
                           return (
                             <motion.div
@@ -147,43 +186,15 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              {isSharedView && (
+              {isSharedViewState && (
                 <Button variant="outline" size="sm" onClick={exitSharedView} className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
-                  חזור לחתונה שלי
+                  חזור לדף הבית
                 </Button>
               )}
 
-              {!isSharedView && !demoMode && <ShareLink />}
+              {!isSharedViewState && !demoMode && user && <ShareLink />}
 
-              <nav className="hidden md:flex items-center space-x-1">
-                <AnimatePresence>
-                  {navItems.map((item, index) => {
-                    const Icon = item.icon
-                    const isActive = pathname === item.href
-                    return (
-                      <motion.div
-                        key={item.href}
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <Link
-                          href={item.href}
-                          className={cn(
-                            "flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                            isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground",
-                          )}
-                        >
-                          <Icon className="h-4 w-4 mr-2" />
-                          {item.label}
-                        </Link>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-              </nav>
               <Button
                 variant="ghost"
                 size="icon"
@@ -193,50 +204,88 @@ export function MainLayout({ children, isSharedView = false }: MainLayoutProps) 
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Avatar className="h-9 w-9 cursor-pointer">
-                    {user ? (
-                      <>
-                        <AvatarImage src={user.photoURL || ""} alt={user.displayName || ""} />
-                        <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
-                      </>
-                    ) : (
-                      <AvatarFallback>א</AvatarFallback>
-                    )}
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>
-                    {user ? user.displayName || user.email : "אורח"}
-                    {demoMode && (
-                      <Badge variant="outline" className="mr-2 text-xs">
-                        מצב הדגמה
-                      </Badge>
-                    )}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Link href="/settings" className="w-full">
-                      הגדרות
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>התנתקות</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {user && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-9 w-9 cursor-pointer">
+                      <AvatarImage src={user.photoURL || ""} alt={user.displayName || ""} />
+                      <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0) || "G"}</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                      {user ? user.displayName || user.email : "אורח"}
+                      {demoMode && (
+                        <Badge variant="outline" className="mr-2 text-xs">
+                          מצב הדגמה
+                        </Badge>
+                      )}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Link href="/settings" className="w-full">
+                        הגדרות
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>התנתקות</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              {!user && !demoMode && !isSharedViewState && (
+                <Button variant="outline" size="sm" onClick={() => router.push("/login")}>
+                  התחברות
+                </Button>
+              )}
+
+              {!user && isSharedViewState && (
+                <Badge variant="outline" className="bg-secondary/50 text-sm">
+                  צופה בתצוגה משותפת
+                </Badge>
+              )}
             </div>
           </div>
         </motion.header>
-        <main className="flex-1 container py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {children}
-          </motion.div>
-        </main>
+
+        {/* Desktop Navigation Sidebar */}
+        <div className="container grid flex-1 gap-12 md:grid-cols-[200px_1fr] py-8">
+          <aside className="hidden md:block w-[200px] h-fit">
+            <nav className="sticky top-24 space-y-2 pr-1">
+              {displayNavItems.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-secondary text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </nav>
+          </aside>
+
+          <main className="flex-1">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {children}
+            </motion.div>
+          </main>
+        </div>
+
         <footer className="border-t py-6 bg-muted/30">
           <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
             <div className="flex items-center gap-2">

@@ -3,22 +3,27 @@
 import { useState, useEffect } from "react"
 import { translations } from "@/lib/translations"
 
+// נוודא שהשפה העברית היא ברירת המחדל
 export function useTranslation() {
   const [language, setLanguage] = useState("he") // שינוי ברירת המחדל לעברית
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem("language") || "he"
-    setLanguage(savedLanguage)
-    document.documentElement.lang = savedLanguage
-    document.documentElement.dir = savedLanguage === "he" ? "rtl" : "ltr"
+    if (typeof window !== "undefined") {
+      const savedLanguage = localStorage.getItem("language") || "he"
+      setLanguage(savedLanguage)
+      document.documentElement.lang = savedLanguage
+      document.documentElement.dir = savedLanguage === "he" ? "rtl" : "ltr"
+    }
   }, [])
 
   const changeLanguage = (newLanguage: "he" | "en") => {
     setLanguage(newLanguage)
-    localStorage.setItem("language", newLanguage)
-    document.documentElement.lang = newLanguage
-    document.documentElement.dir = newLanguage === "he" ? "rtl" : "ltr"
-    window.location.reload() // רענון הדף כדי להחיל את השינויים בכל מקום
+    if (typeof window !== "undefined") {
+      localStorage.setItem("language", newLanguage)
+      document.documentElement.lang = newLanguage
+      document.documentElement.dir = newLanguage === "he" ? "rtl" : "ltr"
+      window.location.reload() // רענון הדף כדי להחיל את השינויים בכל מקום
+    }
   }
 
   const t = (key: string, variables?: Record<string, string>) => {
