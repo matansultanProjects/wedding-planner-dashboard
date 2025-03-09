@@ -8,9 +8,12 @@ export default function DashboardPage() {
   const [isSharedView, setIsSharedView] = useState(false)
 
   useEffect(() => {
-    // Check if we're in a shared view
-    const sharedView = localStorage.getItem("viewingSharedWedding") === "true"
-    setIsSharedView(sharedView)
+    // Check if we're in a shared view - only run on client side
+    if (typeof window !== "undefined") {
+      const sharedView = localStorage.getItem("viewingSharedWedding") === "true"
+      setIsSharedView(sharedView)
+      console.log("Dashboard page - shared view:", sharedView)
+    }
   }, [])
 
   return (

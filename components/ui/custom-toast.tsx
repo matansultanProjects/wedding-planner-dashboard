@@ -1,3 +1,5 @@
+"use client"
+
 import { useToast } from "@/components/ui/use-toast"
 import { CheckCircle, AlertCircle, Info, XCircle } from "lucide-react"
 
@@ -27,6 +29,10 @@ export function useCustomToast() {
       info: "border-l-4 border-l-info bg-info/10",
     }
 
+    // Log for debugging
+    console.log("Showing toast:", { title, description, type })
+
+    // Use only the built-in toast system
     toast({
       title,
       description,

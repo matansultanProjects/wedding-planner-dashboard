@@ -5,7 +5,6 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Users, DollarSign, CheckSquare, Calendar, Clock, AlertCircle, Camera, Edit, CalendarHeart } from "lucide-react"
-import type { Guest, Task, BudgetItem, WeddingDetails } from "@/lib/types"
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -14,10 +13,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/components/auth-provider"
 import { useCustomToast } from "./ui/custom-toast"
-import { useTranslation } from "@/hooks/useTranslation"
 import { db } from "@/lib/firebase"
-import { doc, updateDoc } from "firebase/firestore"
-import { SaveDataButton } from "./save-data-button"
+import { doc, updateDoc, getDoc } from "firebase/firestore"
 
 interface TimelineEvent {
   id: string
@@ -28,18 +25,15 @@ interface TimelineEvent {
 
 interface OverviewProps {
   isSharedView?: boolean
-  weddingData?: any
 }
 
 export function Overview({ isSharedView = false }: OverviewProps) {
-  const { user, demoMode, weddingData } = useAuth()
-  const { t } = useTranslation()
+  const { user, demoMode, weddingData, updateWeddingData } = useAuth()
   const customToast = useCustomToast()
-  const [weddingDetails, setWeddingDetails] = useState<WeddingDetails | null>(null)
-  const [guests, setGuests] = useState<Guest[]>([])
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
-  const [weddingDetailsState, setWeddingDetailsState] = useState<WeddingDetails | null>(null)
+  const [weddingDetails, setWeddingDetails] = useState<any>(null)
+  const [guests, setGuests] = useState<any[]>([])
+  const [tasks, setTasks] = useState<any[]>([])
+  const [budgetItems, setBudgetItems] = useState<any[]>([])
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([])
   const [couplePhoto, setCouplePhoto] = useState<string | null>(null)
 
@@ -54,6 +48,34 @@ export function Overview({ isSharedView = false }: OverviewProps) {
     }
   }, [weddingData])
 
+  // נעדכן את הפונקציה handleUpdateData כדי לרענן את הנתונים ממסד הנתונים
+  const handleUpdateData = () => {
+    // רענון הנתונים ממסד הנתונים
+    if (user && !demoMode) {
+      const weddingRef = doc(db, "weddings", user.uid)
+      getDoc(weddingRef)
+        .then((docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data()
+            console.log("Fetched wedding data:", data)
+            setWeddingDetails(data.weddingDetails)
+            if (data.guests) setGuests(data.guests)
+            if (data.tasks) setTasks(data.tasks)
+            if (data.budgetItems) setBudgetItems(data.budgetItems)
+            if (data.timelineEvents) setTimelineEvents(data.timelineEvents)
+            if (data.couplePhoto) setCouplePhoto(data.couplePhoto)
+          }
+        })
+        .catch((error) => {
+          console.error("שגיאה בטעינת נתונים:", error)
+          customToast.error("שגיאה בטעינת נתונים", "אירעה שגיאה בעת טעינת הנתונים. אנא נסה שוב.")
+        })
+    }
+
+    customToast.success("הנתונים עודכנו", "הנתונים עודכנו בהצלחה")
+  }
+
+  // נעדכן את הפונקציה handlePhotoUpload כדי לשפר את הסנכרון עם מסד הנתונים
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (demoMode || !user) return
 
@@ -64,19 +86,21 @@ export function Overview({ isSharedView = false }: OverviewProps) {
         const base64String = reader.result as string
         setCouplePhoto(base64String)
         try {
-          await updateDoc(doc(db, "weddings", user.uid), { couplePhoto: base64String })
-          customToast.success(t("photoUpdated"), t("photoUpdatedDescription"))
+          if (db) {
+            await updateDoc(doc(db, "weddings", user.uid), { couplePhoto: base64String })
+
+            // Update the wedding data context
+            updateWeddingData({ couplePhoto: base64String })
+
+            customToast.success("התמונה עודכנה", "תמונת הזוג עודכנה בהצלחה")
+          }
         } catch (error) {
-          console.error("Error updating photo:", error)
-          customToast.error(t("errorUpdatingPhoto"), t("errorUpdatingPhotoDescription"))
+          console.error("שגיאה בעדכון התמונה:", error)
+          customToast.error("שגיאה בעדכון התמונה", "אירעה שגיאה בעת עדכון התמונה")
         }
       }
       reader.readAsDataURL(file)
     }
-  }
-
-  const handleUpdateData = () => {
-    customToast.success(t("dataUpdated"), t("dataUpdatedDescription"))
   }
 
   const totalGuests = guests.reduce((sum, guest) => sum + guest.invitedCount, 0)
@@ -117,13 +141,13 @@ export function Overview({ isSharedView = false }: OverviewProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-end mb-4">
-        <Button onClick={handleUpdateData}>{t("refreshData")}</Button>
+        <Button onClick={handleUpdateData}>רענן נתונים</Button>
       </div>
 
       <Card className="overflow-hidden border-none shadow-card">
         <div className="bg-gradient-to-r from-primary/90 to-pink-500/90 text-white">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-white">{t("overviewTitle")}</CardTitle>
+            <CardTitle className="text-3xl font-bold text-white">סקירה כללית</CardTitle>
           </CardHeader>
           <CardContent>
             {weddingDetails ? (
@@ -137,21 +161,17 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                     <span className="text-lg">{new Date(weddingDetails.date).toLocaleDateString("he-IL")}</span>
                     {daysUntilWedding !== null && (
                       <Badge variant="outline" className="ml-2 bg-white/20 text-white border-white/30">
-                        {daysUntilWedding} {t("daysLeft")}
+                        {daysUntilWedding} ימים נותרו
                       </Badge>
                     )}
                   </div>
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <Users className="h-5 w-5" />
-                    <span className="text-lg">
-                      {t("estimatedGuests")}: {weddingDetails.estimatedGuests}
-                    </span>
+                    <span className="text-lg">מספר אורחים משוער: {weddingDetails.estimatedGuests}</span>
                   </div>
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <DollarSign className="h-5 w-5" />
-                    <span className="text-lg">
-                      {t("venue")}: {weddingDetails.venue}
-                    </span>
+                    <span className="text-lg">מקום האירוע: {weddingDetails.venue}</span>
                   </div>
                 </div>
                 <div className="flex justify-center items-center">
@@ -159,10 +179,10 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                     <div className="relative">
                       <img
                         src={couplePhoto || "/placeholder.svg"}
-                        alt={t("couplePhoto")}
+                        alt="תמונת הזוג"
                         className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg"
                       />
-                      {!demoMode && (
+                      {!demoMode && !isSharedView && (
                         <label
                           htmlFor="photo-upload"
                           className="absolute bottom-2 right-2 cursor-pointer bg-white text-primary rounded-full p-2 shadow-md hover:bg-white/90 transition-colors"
@@ -180,10 +200,10 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                     </div>
                   ) : (
                     <div className="w-48 h-48 bg-white/20 rounded-full flex items-center justify-center border-4 border-white/30">
-                      {!demoMode ? (
+                      {!demoMode && !isSharedView ? (
                         <label htmlFor="photo-upload" className="cursor-pointer text-center">
                           <Camera className="h-12 w-12 mx-auto mb-2" />
-                          <span className="text-sm">{t("addPhoto")}</span>
+                          <span className="text-sm">הוסף תמונה</span>
                           <Input
                             id="photo-upload"
                             type="file"
@@ -195,7 +215,7 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                       ) : (
                         <div className="text-center">
                           <Camera className="h-12 w-12 mx-auto mb-2" />
-                          <span className="text-sm">{t("noPhotoAvailable")}</span>
+                          <span className="text-sm">אין תמונה זמינה</span>
                         </div>
                       )}
                     </div>
@@ -203,7 +223,7 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                 </div>
               </div>
             ) : (
-              <div className="text-center text-white/80 py-6">{t("noWeddingDetailsYet")}</div>
+              <div className="text-center text-white/80 py-6">אין פרטי חתונה עדיין</div>
             )}
           </CardContent>
         </div>
@@ -212,34 +232,33 @@ export function Overview({ isSharedView = false }: OverviewProps) {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("totalGuests")}</CardTitle>
+            <CardTitle className="text-sm font-medium">סך הכל אורחים</CardTitle>
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalGuests}</div>
             <Progress value={(confirmedGuests / totalGuests) * 100 || 0} className="mt-2 h-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {confirmedGuests} {t("confirmedOf")} {totalGuests}
+              {confirmedGuests} אישרו הגעה מתוך {totalGuests}
             </p>
           </CardContent>
         </Card>
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("budget")}</CardTitle>
+            <CardTitle className="text-sm font-medium">תקציב</CardTitle>
             <DollarSign className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₪{totalBudget.toLocaleString()}</div>
             <Progress value={(totalDeposit / totalBudget) * 100 || 0} className="mt-2 h-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {t("deposits")}: ₪{totalDeposit.toLocaleString()} ({((totalDeposit / totalBudget) * 100 || 0).toFixed(0)}
-              %)
+              מקדמות: ₪{totalDeposit.toLocaleString()} ({((totalDeposit / totalBudget) * 100 || 0).toFixed(0)}%)
             </p>
           </CardContent>
         </Card>
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("tasks")}</CardTitle>
+            <CardTitle className="text-sm font-medium">משימות</CardTitle>
             <CheckSquare className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -248,13 +267,13 @@ export function Overview({ isSharedView = false }: OverviewProps) {
             </div>
             <Progress value={(completedTasks / totalTasks) * 100 || 0} className="mt-2 h-2" />
             <p className="text-xs text-muted-foreground mt-2">
-              {((completedTasks / totalTasks) * 100 || 0).toFixed(0)}% {t("tasksCompleted")}
+              {((completedTasks / totalTasks) * 100 || 0).toFixed(0)}% הושלמו
             </p>
           </CardContent>
         </Card>
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("upcomingEvents")}</CardTitle>
+            <CardTitle className="text-sm font-medium">אירועים קרובים</CardTitle>
             <Clock className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -269,7 +288,7 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">{t("noUpcomingEvents")}</p>
+                <p className="text-sm text-muted-foreground">אין אירועים קרובים</p>
               )}
             </div>
           </CardContent>
@@ -278,15 +297,15 @@ export function Overview({ isSharedView = false }: OverviewProps) {
 
       <Tabs defaultValue="charts" className="w-full">
         <TabsList className="w-full justify-start mb-4">
-          <TabsTrigger value="charts">{t("dataAndCharts")}</TabsTrigger>
-          <TabsTrigger value="tasks">{t("recentTasks")}</TabsTrigger>
+          <TabsTrigger value="charts">נתונים וגרפים</TabsTrigger>
+          <TabsTrigger value="tasks">משימות אחרונות</TabsTrigger>
         </TabsList>
         <TabsContent value="charts">
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="card-hover">
               <CardHeader>
-                <CardTitle className="text-lg">{t("guestDistribution")}</CardTitle>
-                <CardDescription>{t("byRelation")}</CardDescription>
+                <CardTitle className="text-lg">התפלגות אורחים</CardTitle>
+                <CardDescription>לפי קשר</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -315,8 +334,8 @@ export function Overview({ isSharedView = false }: OverviewProps) {
             </Card>
             <Card className="card-hover">
               <CardHeader>
-                <CardTitle className="text-lg">{t("budgetByCategory")}</CardTitle>
-                <CardDescription>{t("plannedVsActual")}</CardDescription>
+                <CardTitle className="text-lg">תקציב לפי קטגוריה</CardTitle>
+                <CardDescription>מתוכנן מול מקדמות</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -326,8 +345,8 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="planned" fill="#FF6B8B" name={t("plannedBudget")} />
-                      <Bar dataKey="deposit" fill="#46CDCF" name={t("deposits")} />
+                      <Bar dataKey="planned" fill="#FF6B8B" name="תקציב מתוכנן" />
+                      <Bar dataKey="deposit" fill="#46CDCF" name="מקדמות" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -338,8 +357,8 @@ export function Overview({ isSharedView = false }: OverviewProps) {
         <TabsContent value="tasks">
           <Card className="card-hover">
             <CardHeader>
-              <CardTitle className="text-lg">{t("recentTasks")}</CardTitle>
-              <CardDescription>{t("upcomingTasks")}</CardDescription>
+              <CardTitle className="text-lg">משימות אחרונות</CardTitle>
+              <CardDescription>משימות קרובות</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -365,13 +384,13 @@ export function Overview({ isSharedView = false }: OverviewProps) {
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-muted-foreground py-6">{t("noTasksToDisplay")}</p>
+                  <p className="text-center text-muted-foreground py-6">אין משימות להצגה</p>
                 )}
 
                 {tasks.length > 0 && (
                   <div className="flex justify-center mt-4">
                     <Button variant="outline" size="sm" asChild>
-                      <a href="/tasks">{t("viewAllTasks")}</a>
+                      <a href="/tasks">צפה בכל המשימות</a>
                     </Button>
                   </div>
                 )}
@@ -385,14 +404,15 @@ export function Overview({ isSharedView = false }: OverviewProps) {
         <CardHeader>
           <div className="flex items-center gap-2">
             <CalendarHeart className="h-5 w-5 text-primary" />
-            <CardTitle>{t("weddingTip")}</CardTitle>
+            <CardTitle>טיפ ליום החתונה</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-lg">{t("weddingTipContent")}</p>
+          <p className="text-lg">
+            זכרו להקצות אדם אחראי שידאג לכם ביום החתונה, כך שתוכלו להתרכז בחגיגה ולא בפרטים הקטנים.
+          </p>
         </CardContent>
       </Card>
-      {!demoMode && <SaveDataButton data={weddingData} collectionName="weddings" documentId={user?.uid || ""} />}
     </div>
   )
 }
